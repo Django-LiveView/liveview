@@ -12,13 +12,13 @@ from django.template.loader import render_to_string
 
 # Load all actions from settings.LIVEVIEW_APPS
 for current_app in settings.LIVEVIEW_APPS:
-    for entry in os.scandir(os.path.join(settings.BASE_DIR, current_app, "actions")):
+    for entry in os.scandir(os.path.join(settings.BASE_DIR, current_app.replace(".", "/"), "actions")):
         if entry.is_file():
             name = entry.name.split(".")[0]
             exec(f"from {current_app}.actions import {name} as {name}")
 
 
-class DjangoLiveviewConsumer(AsyncJsonWebsocketConsumer):
+class LiveViewConsumer(AsyncJsonWebsocketConsumer):
 
     channel_name_broadcast = "broadcast"
 
