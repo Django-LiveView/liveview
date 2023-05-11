@@ -6,6 +6,8 @@ LiveView is a Django application for creating a dynamic website using HTML over 
 
 Detailed documentation is in https://django-liveview.andros.dev
 
+Example template: https://github.com/Django-LiveView/starter-template
+
 Quick start
 -----------
 
