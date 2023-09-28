@@ -2,7 +2,7 @@ from threading import Thread
 from asgiref.sync import async_to_sync
 import time
 from django.template.loader import render_to_string
-from app.website.context_processors import get_global_context
+from .context_processors import get_global_context
 from asgiref.sync import sync_to_async
 from django.utils.translation import activate as translation_activate
 from django.conf import settings
