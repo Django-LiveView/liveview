@@ -40,7 +40,7 @@ Quick start
 
 2. Include, in settings.py, the Apps that will use LiveView::
 
-     settings.LIVEVIEW_APPS = ["website"]
+     LIVEVIEW_APPS = ["website"]
 
 3. Run ``python manage.py migrate`` to create the LiveView models.
 
