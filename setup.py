@@ -3,7 +3,7 @@ from setuptools import setup
 setup(
     name="django-liveview",
     py_modules=["liveview"],
-    version="1.0.2",
+    version="1.0.3",
     python_requires=">3.7",
     description="Framework for creating Realtime SPAs using HTML over the Wire technology in Django",
     author="Andros Fenollosa",
