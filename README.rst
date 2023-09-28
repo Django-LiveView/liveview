@@ -34,7 +34,7 @@ Quick start
     INSTALLED_APPS = [
         "daphne",
         "channels",
-        "django-liveview",
+        "django_liveview",
         ...,
     ]
 
