@@ -2,3 +2,4 @@
 /dist/
 /django_liveview.egg-info/
 /liveview/migrations/__pycache__/
+/venv/

@@ -3,15 +3,15 @@ from setuptools import setup
 setup(
     name="django-liveview",
     py_modules=["liveview"],
-    version="1.0.4",
+    version="1.0.5",
     python_requires=">3.7",
     description="Framework for creating Realtime SPAs using HTML over the Wire technology in Django",
     author="Andros Fenollosa",
     author_email="andros@fenollosa.email",
     url="https://django-liveview.andros.dev/",
     license="MIT License",
-    platforms=['any'],
-    packages=["liveview"],
+    platforms=["any"],
+    packages=["liveview", "liveview.migrations"],
     keywords=["django", "ssr", "channels", "liveview", "html-over-the-wire", "hotwire"],
     classifiers=[
         "Programming Language :: Python :: 3",
