@@ -5,7 +5,7 @@ A framework for building interactive, real-time web applications with Django
 using WebSockets, inspired by Phoenix LiveView and Laravel Livewire.
 """
 
-__version__ = "0.1.0"
+__version__ = "2.0.0"
 __author__ = "Andros Fenollosa"
 __license__ = "MIT"
 

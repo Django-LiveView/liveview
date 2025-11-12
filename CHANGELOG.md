@@ -5,6 +5,24 @@ All notable changes to Django LiveView will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [2.0.0] - 2025-11-12
+
+### Changed
+- **BREAKING:** Package renamed from `liveview` to `django_liveview`
+- **BREAKING:** Import paths changed from `from liveview.` to `from django_liveview.`
+- Improved routing with `get_liveview_urlpatterns()` helper function
+- JavaScript assets now bundled within the package
+- Complete package restructure for distribution via pip/PyPI
+
+### Added
+- Professional package structure with pyproject.toml
+- Comprehensive documentation (README, QUICKSTART, MIGRATION_GUIDE)
+- Git repository with semantic versioning
+- Static assets included in package
+
+### Migration Guide
+See MIGRATION_GUIDE.md for detailed migration instructions from v0.1.0
+
 ## [0.1.0] - 2025-11-12
 
 ### Added
@@ -41,4 +59,5 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Dynamic HTML updates (replace, append, remove)
 - Custom routing configuration support
 
+[2.0.0]: https://github.com/tanrax/django-liveview/releases/tag/v2.0.0
 [0.1.0]: https://github.com/tanrax/django-liveview/releases/tag/v0.1.0
