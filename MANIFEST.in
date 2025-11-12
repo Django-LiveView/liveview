@@ -1,0 +1,21 @@
+# Include documentation
+include README.md
+include LICENSE
+include CHANGELOG.md
+
+# Include package data
+recursive-include django_liveview/static *
+recursive-include django_liveview/templates *
+recursive-include django_liveview/management *
+
+# Include frontend source (for development/customization)
+recursive-include frontend *.js *.json
+
+# Exclude unnecessary files
+global-exclude __pycache__
+global-exclude *.py[co]
+global-exclude .DS_Store
+global-exclude *.swp
+global-exclude *.swo
+recursive-exclude tests *
+recursive-exclude docs/_build *
