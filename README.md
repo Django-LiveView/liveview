@@ -1222,7 +1222,7 @@ Inspired by:
 - **Documentation**: [GitHub README](https://github.com/tanrax/django-liveview#readme)
 - **Issues**: [GitHub Issues](https://github.com/tanrax/django-liveview/issues)
 - **Discussions**: [GitHub Discussions](https://github.com/tanrax/django-liveview/discussions)
-- **Mastodon**: [@programadorwebvalencia@mastodont.cat](https://mastodont.cat/@programadorwebvalencia)
+- **Mastodon**: [@andros@activity.andros.dev](https://activity.andros.dev/@andros)
 
 ---
 
