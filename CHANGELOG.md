@@ -5,14 +5,21 @@ All notable changes to Django LiveView will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-## [2.0.0] - 2025-11-12
+## [2.0.0] - 2025-11-20
 
 ### Changed
-- **BREAKING:** Package renamed from `liveview` to `django_liveview`
-- **BREAKING:** Import paths changed from `from liveview.` to `from django_liveview.`
+- **BREAKING:** Module name changed from `django_liveview` to `liveview` for cleaner imports
+- **BREAKING:** Import paths changed from `from django_liveview` to `from liveview`
+- **BREAKING:** INSTALLED_APPS now uses `"liveview"` instead of `"django_liveview"`
+- **BREAKING:** Static files path changed from `static/django_liveview/` to `static/liveview/`
 - Improved routing with `get_liveview_urlpatterns()` helper function
 - JavaScript assets now bundled within the package
 - Complete package restructure for distribution via pip/PyPI
+- Comprehensive documentation with 13+ feature examples
+
+### Note
+- Package name on PyPI remains `django-liveview`
+- This provides cleaner imports: `from liveview import liveview_handler, send`
 
 ### Added
 - Professional package structure with pyproject.toml

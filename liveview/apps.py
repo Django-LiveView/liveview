@@ -8,7 +8,7 @@ import sys
 
 class LiveViewConfig(AppConfig):
     default_auto_field = "django.db.models.BigAutoField"
-    name = "django_liveview"
+    name = "liveview"
     verbose_name = "Django LiveView"
 
     def ready(self):

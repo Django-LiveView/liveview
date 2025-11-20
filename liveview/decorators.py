@@ -5,7 +5,7 @@ Modular decorator system for handling LiveView handlers.
 import logging
 from typing import Dict, Callable
 from functools import wraps
-from django_liveview.connections import send
+from liveview.connections import send
 
 logger = logging.getLogger(__name__)
 

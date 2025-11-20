@@ -9,8 +9,8 @@ __version__ = "2.0.0"
 __author__ = "Andros Fenollosa"
 __license__ = "MIT"
 
-from django_liveview.decorators import liveview_handler, liveview_registry
-from django_liveview.connections import send
+from liveview.decorators import liveview_handler, liveview_registry
+from liveview.connections import send
 
 __all__ = [
     "liveview_handler",

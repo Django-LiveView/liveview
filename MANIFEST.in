@@ -4,9 +4,9 @@ include LICENSE
 include CHANGELOG.md
 
 # Include package data
-recursive-include django_liveview/static *
-recursive-include django_liveview/templates *
-recursive-include django_liveview/management *
+recursive-include liveview/static *
+recursive-include liveview/templates *
+recursive-include liveview/management *
 
 # Include frontend source (for development/customization)
 recursive-include frontend *.js *.json

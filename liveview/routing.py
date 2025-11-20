@@ -3,7 +3,7 @@ Helper functions for routing LiveView WebSocket connections.
 """
 
 from django.urls import path
-from django_liveview.consumers import LiveViewConsumer
+from liveview.consumers import LiveViewConsumer
 
 
 def get_liveview_path(route: str = "ws/liveview/<str:room_name>/"):
@@ -18,7 +18,7 @@ def get_liveview_path(route: str = "ws/liveview/<str:room_name>/"):
 
     Example:
         # In your routing.py
-        from django_liveview.routing import get_liveview_path
+        from liveview.routing import get_liveview_path
 
         websocket_urlpatterns = [
             get_liveview_path(),
@@ -36,7 +36,7 @@ def get_liveview_urlpatterns():
 
     Example:
         # In your routing.py
-        from django_liveview.routing import get_liveview_urlpatterns
+        from liveview.routing import get_liveview_urlpatterns
 
         websocket_urlpatterns = get_liveview_urlpatterns()
     """

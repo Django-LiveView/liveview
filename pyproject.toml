@@ -58,14 +58,14 @@ Repository = "https://github.com/tanrax/django-liveview"
 Issues = "https://github.com/tanrax/django-liveview/issues"
 
 [tool.setuptools]
-packages = ["django_liveview"]
+packages = ["liveview"]
 include-package-data = true
 
 [tool.setuptools.package-data]
-django_liveview = [
-    "static/django_liveview/*.js",
-    "static/django_liveview/*.map",
-    "templates/django_liveview/*.html",
+liveview = [
+    "static/liveview/*.js",
+    "static/liveview/*.map",
+    "templates/liveview/*.html",
 ]
 
 [tool.black]

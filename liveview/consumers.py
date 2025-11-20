@@ -1,8 +1,8 @@
 from channels.generic.websocket import JsonWebsocketConsumer
-from django_liveview.decorators import liveview_registry
+from liveview.decorators import liveview_registry
 import logging
 from asgiref.sync import async_to_sync
-from django_liveview.connections import send
+from liveview.connections import send
 import re
 
 logger = logging.getLogger(__name__)
