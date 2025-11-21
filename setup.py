@@ -9,7 +9,7 @@ The canonical build configuration is in pyproject.toml.
 from setuptools import setup
 
 # Read the version from pyproject.toml or define it here
-__version__ = "2.1.2"
+__version__ = "2.1.3"
 
 setup(
     name="django-liveview",
@@ -63,9 +63,9 @@ setup(
     ],
     keywords="django liveview websockets realtime stimulus channels",
     project_urls={
-        "Homepage": "https://github.com/tanrax/django-liveview",
-        "Documentation": "https://github.com/tanrax/django-liveview#readme",
-        "Repository": "https://github.com/tanrax/django-liveview",
-        "Issues": "https://github.com/tanrax/django-liveview/issues",
+        "Homepage": "https://django-liveview.andros.dev/",
+        "Documentation": "https://django-liveview.andros.dev/",
+        "Repository": "https://github.com/Django-LiveView/liveview",
+        "Issues": "https://github.com/Django-LiveView/liveview/issues",
     },
 )
