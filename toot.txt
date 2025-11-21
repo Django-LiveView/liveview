@@ -1,0 +1,45 @@
+🚀 **Django LiveView 2.0.0 ya está disponible**
+
+Acabo de lanzar una nueva versión mayor de Django LiveView, el framework que te permite crear aplicaciones web interactivas y en tiempo real usando solo Python — sin necesidad de JavaScript.
+
+## 🎯 ¿Qué es Django LiveView?
+
+Una forma radicalmente más simple de construir interfaces dinámicas con Django. Inspirado en Phoenix LiveView y Laravel Livewire, te permite crear SPAs sin APIs, sin frameworks JavaScript, sin dividir tu lógica entre frontend y backend.
+
+**HTML sobre WebSockets** — toda la interactividad funciona en tiempo real, la lógica vive en Python, y usas el sistema de templates de Django.
+
+**🔧 Configuración simplificada**
+
+```bash
+pip install django-liveview
+```
+
+y...
+
+```python
+INSTALLED_APPS = [
+    "daphne",
+    "channels",
+    "liveview",  # ← Más limpio
+]
+```
+
+## 💪 ¿Qué puedes hacer con LiveView?
+
+- ✅ Actualizar el DOM en tiempo real sin JavaScript
+- ✅ Formularios interactivos con validación instantánea
+- ✅ Infinite scroll y lazy loading
+- ✅ Notificaciones en vivo multi-usuario
+- ✅ Dashboards en tiempo real
+- ✅ Búsquedas con resultados instantáneos
+- ✅ Todo con decoradores Python y templates Django
+
+
+## 📚 Más información
+
+- **PyPI**: https://pypi.org/project/django-liveview/
+- **GitHub**: https://github.com/Django-LiveView/liveview
+
+Si eres desarrollador Django y quieres añadir funcionalidades en tiempo real sin la complejidad de un frontend separado, dale una oportunidad a LiveView.
+
+#django #python #websockets #liveview #htmx

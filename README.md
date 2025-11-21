@@ -639,6 +639,20 @@ def search_articles(consumer, content):
 </div>
 ```
 
+**Add debounce to reduce server calls:**
+
+```html
+<input
+    type="search"
+    name="search"
+    data-liveview-function="search_articles"
+    data-liveview-debounce="500"
+    data-action="input->page#run"
+    placeholder="Search articles...">
+```
+
+The `data-liveview-debounce="500"` attribute waits 500ms after the user stops typing before sending the request. This dramatically reduces server load and provides a better user experience.
+
 ---
 
 ### 8. Auto-focus

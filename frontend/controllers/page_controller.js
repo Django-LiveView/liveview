@@ -7,6 +7,8 @@ export default class extends Controller {
 	connect() {
 		// Initialize observers map to store different threshold observers
 		this.intersectionObservers = new Map();
+		// Initialize map to store debounce timers
+		this.debounceTimers = new Map();
 
 		// Find all elements with intersection attributes within the controller
 		this.setupIntersectionObservers();
@@ -285,6 +287,12 @@ export default class extends Controller {
 		if (this.mutationObserver) {
 			this.mutationObserver.disconnect();
 		}
+
+		// Clean up all debounce timers
+		this.debounceTimers.forEach(timer => {
+			clearTimeout(timer);
+		});
+		this.debounceTimers.clear();
 	}
 
 	// Helper method to execute intersection functions
@@ -333,7 +341,8 @@ export default class extends Controller {
 			"intersectionTrigger",
 			"liveviewFocus",
 			"liveviewInit",
-			"initTrigger"
+			"initTrigger",
+			"liveviewDebounce"
 		];
 
 		// Use the provided targetElement, or fallback to event.currentTarget or this.element
@@ -430,6 +439,29 @@ export default class extends Controller {
 
 	run(event) {
 		event.preventDefault();
-		this.executeFunction(event);
+
+		const target = event.currentTarget;
+		const debounceTime = parseInt(target.dataset.liveviewDebounce);
+
+		// If NO debounce, execute immediately (current behavior)
+		if (!debounceTime || debounceTime === 0 || isNaN(debounceTime)) {
+			this.executeFunction(event);
+			return;
+		}
+
+		// If debounce is set, apply debounce logic
+		// Clear previous timer if exists
+		if (this.debounceTimers.has(target)) {
+			clearTimeout(this.debounceTimers.get(target));
+		}
+
+		// Create new timer
+		const timer = setTimeout(() => {
+			this.executeFunction(event);
+			this.debounceTimers.delete(target);
+		}, debounceTime);
+
+		// Store timer reference
+		this.debounceTimers.set(target, timer);
 	}
 }
