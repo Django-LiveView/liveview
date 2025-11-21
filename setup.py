@@ -9,7 +9,7 @@ The canonical build configuration is in pyproject.toml.
 from setuptools import setup
 
 # Read the version from pyproject.toml or define it here
-__version__ = "2.1.0"
+__version__ = "2.1.1"
 
 setup(
     name="django-liveview",
