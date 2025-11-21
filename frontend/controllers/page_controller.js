@@ -457,7 +457,7 @@ export default class extends Controller {
 
 		// Create new timer
 		const timer = setTimeout(() => {
-			this.executeFunction(event);
+			this.executeFunction(null, target);
 			this.debounceTimers.delete(target);
 		}, debounceTime);
 

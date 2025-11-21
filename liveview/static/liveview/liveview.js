@@ -3427,7 +3427,7 @@
 
     		// Create new timer
     		const timer = setTimeout(() => {
-    			this.executeFunction(event);
+    			this.executeFunction(null, target);
     			this.debounceTimers.delete(target);
     		}, debounceTime);
 
@@ -3451,4 +3451,3 @@
     Stimulus.register("page", pageController);
 
 })();
-//# sourceMappingURL=liveview.js.map
