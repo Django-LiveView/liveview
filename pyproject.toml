@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "django-liveview"
-version = "2.1.1"
+version = "2.1.2"
 description = "Real-time server-rendered interfaces for Django using WebSockets"
 readme = "README.md"
 authors = [
