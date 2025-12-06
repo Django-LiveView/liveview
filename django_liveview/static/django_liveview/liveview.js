@@ -2664,17 +2664,65 @@
      */
 
     /**
+     * Generate a random UUID v4
+     * Uses the native crypto API if available (modern browsers, HTTPS),
+     * otherwise falls back to a polyfill implementation
+     * @return {string} UUID v4 string
+     */
+    function generateUUID() {
+        // Use native crypto.randomUUID() if available (HTTPS required)
+        if (typeof crypto !== 'undefined' && typeof crypto.randomUUID === 'function') {
+            try {
+                return crypto.randomUUID();
+            } catch (e) {
+                console.warn('crypto.randomUUID() failed, falling back to polyfill:', e);
+            }
+        }
+
+        // Fallback polyfill for older browsers or HTTP contexts
+        return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function(c) {
+            const r = Math.random() * 16 | 0;
+            const v = c === 'x' ? r : (r & 0x3 | 0x8);
+            return v.toString(16);
+        });
+    }
+
+    /**
      * Save the current room to localStorage if not already set
-     * @return {void}
+     * If no room is defined in HTML data-room attribute, generates a random UUID
+     * @return {string} The room ID
      */
     function saveRoomToLocalStorage() {
-        const existingRoom = localStorage.getItem('room');
-        if (existingRoom !== null) {
-            return;
+        let room = localStorage.getItem('room');
+
+        // If room already exists in localStorage, use it
+        if (room !== null && room.trim() !== '') {
+            return room;
         }
+
+        // Try to get room from HTML data-room attribute
         const htmlElement = document.querySelector('html');
-        const roomValue = htmlElement.dataset.room;
-        localStorage.setItem('room', roomValue);
+        const dataRoomValue = htmlElement ? htmlElement.dataset.room : null;
+
+        // Determine room value: use data-room if exists and not empty, otherwise generate UUID
+        if (dataRoomValue && dataRoomValue.trim() !== '') {
+            room = dataRoomValue.trim();
+            console.log('Using room ID from HTML data-room attribute:', room);
+        } else {
+            // Generate a random UUID for security
+            room = generateUUID();
+            console.log('Generated new random UUID for room:', room);
+
+            // Update the HTML data-room attribute so it's available for other scripts
+            if (htmlElement) {
+                htmlElement.dataset.room = room;
+            }
+        }
+
+        // Save to localStorage for persistence
+        localStorage.setItem('room', room);
+
+        return room;
     }
 
     /**
@@ -2779,12 +2827,11 @@
       isConnecting = true;
       console.log("Connecting to WebSockets server...");
 
-      // Ensure room is saved to localStorage before connecting
-      saveRoomToLocalStorage();
+      // Ensure room is saved to localStorage before connecting (generates UUID if needed)
+      const room = saveRoomToLocalStorage();
 
       // Build URL after ensuring room is saved
       if (!url) {
-        const room = localStorage.getItem('room');
         url = `${window.webSocketConfig.protocol}://${window.webSocketConfig.host}/ws/liveview/${room}/`;
       }
 
