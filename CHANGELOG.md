@@ -5,6 +5,23 @@ All notable changes to Django LiveView will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [2.1.4] - 2025-12-06
+
+### Added
+- **Auto-generated UUID room IDs**: If no `data-room` attribute is specified in the HTML, the framework now automatically generates a cryptographically random UUID for each user
+- UUID generation uses native `crypto.randomUUID()` API when available (HTTPS), with fallback polyfill for older browsers or HTTP contexts
+- Room IDs are now persisted in localStorage across page reloads
+
+### Changed
+- **Security Improvement**: Default behavior now uses random UUIDs instead of requiring manual room ID configuration
+- Updated documentation with comprehensive security best practices section
+- `data-room` attribute is now optional - recommended to omit for automatic UUID generation
+
+### Security
+- **CRITICAL**: Addressed potential IDOR (Insecure Direct Object Reference) vulnerability when using predictable room IDs like user IDs
+- Documentation now includes warnings about security risks of predictable room IDs
+- Added security best practices guide explaining room ID security implications
+
 ## [2.0.0] - 2025-11-20
 
 ### Changed

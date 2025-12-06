@@ -120,7 +120,7 @@ application = ProtocolTypeRouter({
 <!-- templates/base.html -->
 {% load static %}
 <!DOCTYPE html>
-<html lang="en" data-room="{% if request.user.is_authenticated %}{{ request.user.id }}{% else %}anonymous{% endif %}">
+<html lang="en">
 <head>
     <meta charset="UTF-8">
     <title>{% block title %}My Site{% endblock %}</title>
@@ -135,8 +135,15 @@ application = ProtocolTypeRouter({
 ```
 
 **Important attributes:**
-- `data-room` on `<html>` — unique identifier for WebSocket room (user-specific or shared)
 - `data-controller="page"` on `<body>` — activates the Stimulus controller
+
+**🔒 Security Note:** If you don't specify a `data-room` attribute, Django LiveView will automatically generate a **random UUID** for each user. This UUID is stored in localStorage and persists across sessions. This is the **recommended approach for security** as it prevents attackers from guessing or enumerating room IDs.
+
+**Alternative: Custom Room ID** (use with caution)
+```html
+<html lang="en" data-room="{% if request.user.is_authenticated %}{{ request.user.id }}{% else %}anonymous{% endif %}">
+```
+⚠️ **Warning:** Using predictable IDs like user IDs can be a security risk. An attacker could subscribe to another user's room by guessing their ID. Only use this if you implement proper authorization checks in your handlers.
 
 ### Step 5: Create your first LiveView component
 
@@ -1200,6 +1207,66 @@ def process_data(consumer, content):
 
     Thread(target=process).start()
 ```
+
+---
+
+## 🔒 Security Best Practices
+
+### Room ID Security
+
+Django LiveView uses room IDs to identify WebSocket connections. By default, if you don't specify a `data-room` attribute, the framework **automatically generates a random UUID** for each user, stored in localStorage.
+
+#### ✅ Recommended: Auto-generated UUIDs (Default)
+
+```html
+<html lang="en">
+```
+
+This is the **most secure approach** because:
+- UUIDs are cryptographically random and unpredictable
+- Attackers cannot enumerate or guess room IDs
+- Each user gets a unique, isolated room
+- No risk of IDOR (Insecure Direct Object Reference) attacks
+
+#### ⚠️ Use with Caution: Custom Room IDs
+
+If you need custom room IDs (e.g., for shared rooms or specific use cases):
+
+```html
+<html data-room="my-custom-room">
+```
+
+**Security considerations:**
+- **Never use predictable IDs** like sequential user IDs (`{{ request.user.id }}`)
+- An attacker could connect to `ws://yoursite.com/ws/liveview/123/` and receive another user's data
+- If you must use custom IDs, implement authorization in your handlers:
+
+```python
+@liveview_handler("sensitive_action")
+def sensitive_action(consumer, content):
+    user = consumer.scope.get("user")
+
+    # Verify user is authenticated
+    if not user or not user.is_authenticated:
+        send(consumer, {"error": "Unauthorized"})
+        return
+
+    # Verify user owns this resource
+    resource_id = content["data"]["resourceId"]
+    if not user.has_permission(resource_id):
+        send(consumer, {"error": "Forbidden"})
+        return
+
+    # ... proceed with action
+```
+
+#### Best Practices Summary
+
+1. ✅ **Use auto-generated UUIDs** (default behavior, no `data-room` needed)
+2. ✅ **Validate permissions** in every handler that accesses sensitive data
+3. ✅ **Never trust client-side data** - always verify on the server
+4. ❌ **Don't use predictable room IDs** without authorization checks
+5. ❌ **Don't assume** room isolation provides security - implement proper auth
 
 ---
 
