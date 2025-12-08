@@ -23,22 +23,20 @@ class LiveViewConfig(AppConfig):
         """
         Determine if we should import components based on the current process.
         """
-        # Don't import during migrations, collectstatic, etc.
+        # Don't import during management commands
         if any(
             cmd in sys.argv
             for cmd in ["migrate", "makemigrations", "collectstatic", "compilemessages"]
         ):
             return False
 
-        # Only import in the actual server process, not the reloader process
-        if os.environ.get("RUN_MAIN") == "true":
-            return True
+        # Skip the reloader process (only for runserver)
+        run_main = os.environ.get("RUN_MAIN")
+        if run_main is not None and run_main != "true":
+            return False
 
-        # For production (no autoreload)
-        if not settings.DEBUG:
-            return True
-
-        return False
+        # Import in all other cases
+        return True
 
     def import_liveview_components(self):
         """
