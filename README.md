@@ -119,8 +119,9 @@ application = ProtocolTypeRouter({
 ```html
 <!-- templates/base.html -->
 {% load static %}
+{% load liveview %}
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" data-room="{% liveview_room_uuid %}">
 <head>
     <meta charset="UTF-8">
     <title>{% block title %}My Site{% endblock %}</title>
@@ -135,13 +136,15 @@ application = ProtocolTypeRouter({
 ```
 
 **Important attributes:**
+- `data-room="{% liveview_room_uuid %}"` on `<html>` — unique room ID for each page load
 - `data-controller="page"` on `<body>` — activates the Stimulus controller
 
-**🔒 Security Note:** If you don't specify a `data-room` attribute, Django LiveView will automatically generate a **random UUID** for each user. This UUID is stored in localStorage and persists across sessions. This is the **recommended approach for security** as it prevents attackers from guessing or enumerating room IDs.
+**🔒 Security Note:** The `{% liveview_room_uuid %}` template tag generates a **random UUID** for each request, ensuring isolated sessions and preventing room ID enumeration attacks. This is the **recommended approach for security**.
 
-**Alternative: Custom Room ID** (use with caution)
+**Alternative: User-specific Room ID** (use with caution)
 ```html
-<html lang="en" data-room="{% if request.user.is_authenticated %}{{ request.user.id }}{% else %}anonymous{% endif %}">
+{% load liveview %}
+<html lang="en" data-room="{% if request.user.is_authenticated %}user-{{ request.user.id }}{% else %}{% liveview_room_uuid %}{% endif %}">
 ```
 ⚠️ **Warning:** Using predictable IDs like user IDs can be a security risk. An attacker could subscribe to another user's room by guessing their ID. Only use this if you implement proper authorization checks in your handlers.
 
@@ -1214,18 +1217,20 @@ def process_data(consumer, content):
 
 ### Room ID Security
 
-Django LiveView uses room IDs to identify WebSocket connections. By default, if you don't specify a `data-room` attribute, the framework **automatically generates a random UUID** for each user, stored in localStorage.
+Django LiveView uses room IDs to identify WebSocket connections. The framework provides a secure template tag `{% liveview_room_uuid %}` that generates a **random UUID** for each request.
 
-#### ✅ Recommended: Auto-generated UUIDs (Default)
+#### ✅ Recommended: Template Tag UUIDs (Default)
 
 ```html
-<html lang="en">
+{% load liveview %}
+<html lang="en" data-room="{% liveview_room_uuid %}">
 ```
 
 This is the **most secure approach** because:
 - UUIDs are cryptographically random and unpredictable
+- A new UUID is generated for each page request
 - Attackers cannot enumerate or guess room IDs
-- Each user gets a unique, isolated room
+- Each session gets a unique, isolated room
 - No risk of IDOR (Insecure Direct Object Reference) attacks
 
 #### ⚠️ Use with Caution: Custom Room IDs
@@ -1262,7 +1267,7 @@ def sensitive_action(consumer, content):
 
 #### Best Practices Summary
 
-1. ✅ **Use auto-generated UUIDs** (default behavior, no `data-room` needed)
+1. ✅ **Use `{% liveview_room_uuid %}` template tag** for secure, random room IDs
 2. ✅ **Validate permissions** in every handler that accesses sensitive data
 3. ✅ **Never trust client-side data** - always verify on the server
 4. ❌ **Don't use predictable room IDs** without authorization checks
