@@ -6,6 +6,7 @@ include CHANGELOG.md
 # Include package data
 recursive-include liveview/static *
 recursive-include liveview/templates *
+recursive-include liveview/templatetags *
 recursive-include liveview/management *
 
 # Include frontend source (for development/customization)
