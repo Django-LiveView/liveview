@@ -66,6 +66,22 @@ The guide covers:
 
 ---
 
+## 📚 Documentation
+
+Complete documentation is available at:
+
+**👉 [https://django-liveview.andros.dev/docs/](https://django-liveview.andros.dev/docs/)**
+
+Learn about:
+- Handlers and frontend integration
+- Forms and broadcasting
+- Advanced features (infinite scroll, auto-focus, debounce)
+- Error handling and testing
+- Deployment strategies
+- API reference and troubleshooting
+
+---
+
 ## 📄 License
 
 MIT License - see [LICENSE](LICENSE) file for details.
@@ -84,7 +100,7 @@ Inspired by:
 
 ## 📬 Support
 
-- **Documentation**: [GitHub README](https://github.com/tanrax/django-liveview#readme)
+- **Documentation**: [django-liveview.andros.dev](https://django-liveview.andros.dev/docs/)
 - **Issues**: [GitHub Issues](https://github.com/tanrax/django-liveview/issues)
 - **Discussions**: [GitHub Discussions](https://github.com/tanrax/django-liveview/discussions)
 - **Mastodon**: [@andros@activity.andros.dev](https://activity.andros.dev/@andros)
