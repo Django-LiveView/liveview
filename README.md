@@ -88,23 +88,4 @@ MIT License - see [LICENSE](LICENSE) file for details.
 
 ---
 
-## 🙏 Credits
-
-Created by [Andros Fenollosa](https://github.com/tanrax)
-
-Inspired by:
-- [Phoenix LiveView](https://hexdocs.pm/phoenix_live_view/) (Elixir)
-- [Laravel Livewire](https://laravel-livewire.com/) (PHP)
-
----
-
-## 📬 Support
-
-- **Documentation**: [django-liveview.andros.dev](https://django-liveview.andros.dev/docs/)
-- **Issues**: [GitHub Issues](https://github.com/tanrax/django-liveview/issues)
-- **Discussions**: [GitHub Discussions](https://github.com/tanrax/django-liveview/discussions)
-- **Mastodon**: [@andros@activity.andros.dev](https://activity.andros.dev/@andros)
-
----
-
 **Made with ❤️ and Python**
