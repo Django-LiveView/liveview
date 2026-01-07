@@ -5,6 +5,22 @@ All notable changes to Django LiveView will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [2.1.9] - 2026-01-07
+
+### Added
+- **Keyboard Events Support**: New `data-liveview-keyboard-map` attribute for declarative keyboard shortcut handling
+- Support for letter keys (a-z), number keys (0-9), and special keys (esc, enter, space, tab, arrows, etc.)
+- Support for modifier keys: ctrl, alt, meta (Command/Windows), shift
+- Support for key combinations like ctrl+s, alt+f, meta+k, ctrl+shift+p
+- Automatic focus management for keyboard-enabled elements
+- Dynamic element support via MutationObserver for keyboard maps
+- Proper cleanup of keyboard event listeners on disconnect
+- Scoped keyboard shortcuts (global on body or local on specific elements)
+
+### Changed
+- Updated rollup configuration to output to liveview/static directory
+- Improved frontend controller with keyboard event normalization
+
 ## [2.1.4] - 2025-12-06
 
 ### Added
