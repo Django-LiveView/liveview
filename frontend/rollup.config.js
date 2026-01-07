@@ -7,13 +7,13 @@ export default {
   input: 'main.js',
   output: [
     {
-      file: '../django_liveview/static/django_liveview/liveview.js',
+      file: '../liveview/static/liveview/liveview.js',
       format: 'iife',
       name: 'DjangoLiveView',
       sourcemap: !production
     },
     production && {
-      file: '../django_liveview/static/django_liveview/liveview.min.js',
+      file: '../liveview/static/liveview/liveview.min.js',
       format: 'iife',
       name: 'DjangoLiveView',
       plugins: [terser()]

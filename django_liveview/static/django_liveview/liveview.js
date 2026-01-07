@@ -3026,6 +3026,8 @@
     		this.intersectionObservers = new Map();
     		// Initialize map to store debounce timers
     		this.debounceTimers = new Map();
+    		// Initialize map to store keyboard event listeners
+    		this.keyboardListeners = new Map();
 
     		// Find all elements with intersection attributes within the controller
     		this.setupIntersectionObservers();
@@ -3035,6 +3037,8 @@
     		this.setupFocusForExistingElements();
     		// Setup init functions for existing elements
     		this.setupInitForExistingElements();
+    		// Setup keyboard maps for existing elements
+    		this.setupKeyboardMaps();
     	}
 
     	setupIntersectionObservers() {
@@ -3135,6 +3139,103 @@
     		}
     	}
 
+    	setupKeyboardMaps() {
+    		// Find elements with keyboard map attributes
+    		const keyboardElements = this.element.querySelectorAll('[data-liveview-keyboard-map]');
+
+    		if (keyboardElements.length > 0) {
+    			keyboardElements.forEach(element => {
+    				// Skip if already initialized
+    				if (element.hasAttribute('data-keyboard-map-initialized')) {
+    					return;
+    				}
+
+    				try {
+    					const keyMap = JSON.parse(element.dataset.liveviewKeyboardMap);
+    					this.attachKeyboardListeners(element, keyMap);
+    					element.setAttribute('data-keyboard-map-initialized', 'true');
+    					console.debug("Keyboard map initialized for element:", element, "Map:", keyMap);
+    				} catch (error) {
+    					console.error("Invalid keyboard map JSON:", element.dataset.liveviewKeyboardMap, error);
+    				}
+    			});
+    		}
+    	}
+
+    	attachKeyboardListeners(element, keyMap) {
+    		const handler = (event) => this.handleKeyboardEvent(event, keyMap, element);
+
+    		// Add keydown listener to the element
+    		element.addEventListener('keydown', handler);
+
+    		// Store reference for cleanup
+    		if (!this.keyboardListeners.has(element)) {
+    			this.keyboardListeners.set(element, []);
+    		}
+    		this.keyboardListeners.get(element).push({ event: 'keydown', handler });
+
+    		// Make element focusable if it's not already
+    		if (!element.hasAttribute('tabindex') && !this.canReceiveFocus(element)) {
+    			element.setAttribute('tabindex', '-1');
+    			console.debug("Added tabindex to element for keyboard navigation:", element);
+    		}
+    	}
+
+    	handleKeyboardEvent(event, keyMap, element) {
+    		const keyString = this.normalizeKeyEvent(event);
+
+    		// Check if this key combination is mapped
+    		if (keyMap[keyString]) {
+    			event.preventDefault();
+    			const functionName = keyMap[keyString];
+    			console.debug(`Keyboard event triggered: ${keyString} -> ${functionName}`);
+    			this.executeLiveviewFunction(element, functionName, 'keyboard');
+    		}
+    	}
+
+    	normalizeKeyEvent(event) {
+    		const modifiers = [];
+
+    		// Collect modifiers in consistent order
+    		if (event.ctrlKey) modifiers.push('ctrl');
+    		if (event.altKey) modifiers.push('alt');
+    		if (event.metaKey) modifiers.push('meta');
+    		if (event.shiftKey && !this.isShiftableKey(event.key)) modifiers.push('shift');
+
+    		const key = this.normalizeKey(event.key);
+
+    		if (modifiers.length > 0) {
+    			return modifiers.join('+') + '+' + key;
+    		}
+    		return key;
+    	}
+
+    	normalizeKey(key) {
+    		// Map special keys to simplified names
+    		const keyMap = {
+    			'Escape': 'esc',
+    			' ': 'space',
+    			'ArrowUp': 'up',
+    			'ArrowDown': 'down',
+    			'ArrowLeft': 'left',
+    			'ArrowRight': 'right',
+    			'Enter': 'enter',
+    			'Tab': 'tab',
+    			'Home': 'home',
+    			'End': 'end',
+    			'PageUp': 'page_up',
+    			'PageDown': 'page_down'
+    		};
+
+    		return keyMap[key] || key.toLowerCase();
+    	}
+
+    	isShiftableKey(key) {
+    		// Keys that change with shift don't need shift in the modifier list
+    		// (letters become uppercase, numbers become symbols)
+    		return key.length === 1 && /[a-zA-Z0-9]/.test(key);
+    	}
+
     	executeInitFunction(element, functionName) {
     		// Create synthetic event to reuse existing logic
     		const syntheticEvent = {
@@ -3171,6 +3272,7 @@
     		// Create mutation observer to detect dynamically added elements
     		this.mutationObserver = new MutationObserver((mutations) => {
     			let hasNewIntersectionElements = false;
+    			let hasNewKeyboardMaps = false;
     			let newFocusElements = [];
 
     			mutations.forEach((mutation) => {
@@ -3192,6 +3294,19 @@
     								hasNewIntersectionElements = true;
     							}
 
+    							// Check if the node itself has keyboard map attribute
+    							if (node.hasAttribute && node.hasAttribute('data-liveview-keyboard-map')) {
+    								hasNewKeyboardMaps = true;
+    							}
+
+    							// Check if any descendants have keyboard map attributes
+    							const keyboardDescendants = node.querySelectorAll ?
+    								node.querySelectorAll('[data-liveview-keyboard-map]') :
+    								[];
+    							if (keyboardDescendants.length > 0) {
+    								hasNewKeyboardMaps = true;
+    							}
+
     							// Check for focus attributes on the node itself
     							if (node.hasAttribute && node.hasAttribute('data-liveview-focus') &&
     								node.dataset.liveviewFocus === "true") {
@@ -3211,6 +3326,11 @@
     			// If new intersection elements were found, set up observers for them
     			if (hasNewIntersectionElements) {
     				this.setupIntersectionObservers();
+    			}
+
+    			// If new keyboard map elements were found, set up listeners for them
+    			if (hasNewKeyboardMaps) {
+    				this.setupKeyboardMaps();
     			}
 
     			// Handle focus for new elements
@@ -3310,6 +3430,14 @@
     			clearTimeout(timer);
     		});
     		this.debounceTimers.clear();
+
+    		// Clean up all keyboard event listeners
+    		this.keyboardListeners.forEach((listeners, element) => {
+    			listeners.forEach(({ event, handler }) => {
+    				element.removeEventListener(event, handler);
+    			});
+    		});
+    		this.keyboardListeners.clear();
     	}
 
     	// Helper method to execute intersection functions
@@ -3359,7 +3487,9 @@
     			"liveviewFocus",
     			"liveviewInit",
     			"initTrigger",
-    			"liveviewDebounce"
+    			"liveviewDebounce",
+    			"liveviewKeyboardMap",
+    			"keyboardMapInitialized"
     		];
 
     		// Use the provided targetElement, or fallback to event.currentTarget or this.element
