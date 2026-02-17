@@ -51,22 +51,40 @@ export const renderHTML = (data) => {
   if (targetHTML) {
     // Remove the content of the target
     if (data.remove) {
+        if (targetHTML.__cleanup) {
+            targetHTML.__cleanup();
+            delete targetHTML.__cleanup;
+        }
         targetHTML.remove();
     } else {
-        const reScript = /<script\b[^>]*>([\s\S]*?)<\/script>/gm;
-        const htmlText = data.html.replace(reScript, '');
+        const parser = new DOMParser();
+        const doc = parser.parseFromString(data.html, 'text/html');
+        const scripts = Array.from(
+            doc.querySelectorAll('script:not([type]), script[type="text/javascript"]')
+        );
+        scripts.forEach(s => s.remove());
+        const htmlText = doc.body.innerHTML;
         if (data.append) {
             // Add the content to the target
             targetHTML.insertAdjacentHTML("beforeend", htmlText);
         } else {
+            // Call cleanup before replacing content
+            if (targetHTML.__cleanup) {
+                targetHTML.__cleanup();
+                delete targetHTML.__cleanup;
+            }
             // Replace the content of the target
             targetHTML.innerHTML = htmlText;
         }
-        // Add JS to the target
-        for (const match of data.html.matchAll(reScript)) {
-            const script = document.createElement('script');
-            script.textContent = match[1];
-            targetHTML.insertAdjacentElement("beforeend", script);
+        // Execute scripts with the target element as local context.
+        // 'el' and 'this' inside the script refer to the target element.
+        for (const script of scripts) {
+            try {
+                const fn = new Function('el', script.textContent);
+                fn.call(targetHTML, targetHTML);
+            } catch (e) {
+                console.error('LiveView script error:', e);
+            }
         }
         // If it is a new page or is backward, the scroll returns to the beginning
         if ( data.html && !data.scroll && data.url) {
