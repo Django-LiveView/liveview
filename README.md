@@ -37,7 +37,7 @@ The guide covers:
 
 Complete documentation is available at:
 
-**👉 [https://django-liveview.andros.dev/docs/](https://django-liveview.andros.dev/docs/)**
+**👉 [https://django-liveview.andros.dev/docs/install/](https://django-liveview.andros.dev/docs/install/)**
 
 Learn about:
 - Handlers and frontend integration
