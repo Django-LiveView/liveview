@@ -49,6 +49,12 @@ Learn about:
 
 ---
 
+## 🤝 Contributing
+
+Contributions are welcome! Please see the [contribution guidelines](https://git.andros.dev/andros/contribute) for instructions on how to submit issues or pull requests.
+
+---
+
 ## 📄 License
 
 MIT License - see [LICENSE](LICENSE) file for details.
