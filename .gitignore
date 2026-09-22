@@ -25,6 +25,7 @@ MANIFEST
 
 # Virtual environments
 venv/
+.venv/
 env/
 ENV/
 env.bak/
@@ -44,6 +45,10 @@ staticfiles/
 htmlcov/
 .tox/
 .hypothesis/
+
+# Linting
+.mypy_cache/
+.ruff_cache/
 
 # IDEs
 .vscode/
