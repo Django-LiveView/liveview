@@ -1,12 +1,14 @@
 """
 Helper functions for routing LiveView WebSocket connections.
 """
+from typing import cast, Any
+from collections.abc import Callable
 
-from django.urls import path
+from django.urls import path, URLPattern
 from liveview.consumers import LiveViewConsumer
 
 
-def get_liveview_path(route: str = "ws/liveview/<str:room_name>/"):
+def get_liveview_path(route: str = "ws/liveview/<str:room_name>/") -> URLPattern:
     """
     Returns a URL pattern for LiveView WebSocket connections.
 
@@ -24,10 +26,11 @@ def get_liveview_path(route: str = "ws/liveview/<str:room_name>/"):
             get_liveview_path(),
         ]
     """
-    return path(route, LiveViewConsumer.as_asgi())
+    asgi_app = cast(Callable[..., Any], LiveViewConsumer.as_asgi())
+    return path(route, asgi_app)
 
 
-def get_liveview_urlpatterns():
+def get_liveview_urlpatterns() -> list[URLPattern]:
     """
     Returns a list containing the default LiveView URL pattern.
 

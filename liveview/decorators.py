@@ -3,31 +3,36 @@ Modular decorator system for handling LiveView handlers.
 """
 
 import logging
-from typing import Dict, Callable
+from typing import Callable, TypeVar, Any, cast
+from collections.abc import Callable
 from functools import wraps
 from liveview.connections import send
 
 logger = logging.getLogger(__name__)
+
+F = TypeVar("F", bound=Callable[..., Any])
 
 
 class LiveviewHandlerRegistry:
     """Registry for managing LiveView handlers."""
 
     def __init__(self):
-        self._handlers: Dict[str, Callable] = {}
+        self._handlers: dict[str, Callable] = {}
         self._middleware: list = []
 
-    def register(self, function_name: str):
+    def register(self, function_name: str) -> Callable[[F], F]:
         """Decorator to register LiveView handlers."""
 
-        def decorator(func: Callable):
+        def decorator(func: F) -> F:
             @wraps(func)
-            def wrapper(consumer, content, *args, **kwargs):
+            def wrapper(
+                consumer: Any, content: dict[str, Any], *args: Any, **kwargs: Any
+            ) -> Any:
                 # Apply middleware before handler
                 for middleware in self._middleware:
                     result = middleware(consumer, content, function_name)
                     if result is False:  # Middleware can cancel execution
-                        return
+                        return None
 
                 try:
                     return func(consumer, content, *args, **kwargs)
@@ -44,15 +49,15 @@ class LiveviewHandlerRegistry:
 
             self._handlers[function_name] = wrapper
             logger.debug(f"Registered LiveView handler: {function_name}")
-            return wrapper
+            return cast(F, wrapper)
 
         return decorator
 
-    def get_handler(self, function_name: str) -> Callable:
+    def get_handler(self, function_name: str) -> Callable | None:
         """Get a handler by name."""
         return self._handlers.get(function_name)
 
-    def get_all_handlers(self) -> Dict[str, Callable]:
+    def get_all_handlers(self) -> dict[str, Callable]:
         """Return all registered handlers."""
         return self._handlers.copy()
 
@@ -78,7 +83,7 @@ liveview_registry = LiveviewHandlerRegistry()
 
 
 # Main decorator
-def liveview_handler(function_name: str):
+def liveview_handler(function_name: str) -> Callable[[F], F]:
     """
     Decorator to register LiveView handlers.
 
