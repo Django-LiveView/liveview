@@ -6,8 +6,9 @@ Usage:
     <html data-room="{% liveview_room_uuid %}">
 """
 
-from django import template
 from uuid import uuid4
+
+from django import template
 
 register = template.Library()
 

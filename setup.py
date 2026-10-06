@@ -6,6 +6,8 @@ This setup.py is maintained for backwards compatibility with older pip versions.
 The canonical build configuration is in pyproject.toml.
 """
 
+from pathlib import Path
+
 from setuptools import setup
 
 # Read the version from pyproject.toml or define it here
@@ -15,11 +17,11 @@ setup(
     name="django-liveview",
     version=__version__,
     description="Real-time server-rendered interfaces for Django using WebSockets",
-    long_description=open("README.md").read(),
+    long_description=Path("README.md").read_text(encoding="utf-8"),
     long_description_content_type="text/markdown",
     author="Andros Fenollosa",
     author_email="andros@fenollosa.email",
-    url="https://github.com/tanrax/django-liveview",
+    url="https://github.com/Django-LiveView/liveview",
     license="MIT",
     packages=["liveview"],
     include_package_data=True,
@@ -36,6 +38,9 @@ setup(
             "black>=23.0.0",
             "ruff>=0.1.0",
             "mypy>=1.0.0",
+            "django-stubs>=5.0.0",
+            "types-setuptools>=84.0.0",
+            "types-channels>=4.3.0",
         ],
     },
     python_requires=">=3.10",

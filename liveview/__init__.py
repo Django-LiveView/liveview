@@ -9,8 +9,8 @@ __version__ = "2.1.8"
 __author__ = "Andros Fenollosa"
 __license__ = "MIT"
 
-from liveview.decorators import liveview_handler, liveview_registry
 from liveview.connections import send
+from liveview.decorators import liveview_handler, liveview_registry
 
 __all__ = [
     "liveview_handler",

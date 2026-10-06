@@ -21,11 +21,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Changed
 - `renderHTML` no longer calls `history.pushState` directly; URL updates are handled by the new history module, which tags every entry with its index
 - `LiveviewHandlerRegistry.get_handler` is now annotated as returning `Callable | None`, matching its actual behaviour when the handler does not exist
+- Errors while importing a `liveview_components` module are logged with their traceback (`logging`) instead of printed
 
 ### Fixed
 - `LiveViewConsumer.connect` created a `group_add` coroutine that was never awaited (`RuntimeWarning` on every connection)
 - `send(None, data, broadcast=True)` raised `ValueError` even though broadcasting does not need a consumer; it now sends to the broadcast group, so you can broadcast from outside a handler (e.g. a background task)
 - A missing channel layer (`CHANNEL_LAYERS`) when broadcasting is now reported explicitly
+- `setup.py` `dev` extra was out of sync with `pyproject.toml`, and its URL pointed to the old repository
 
 ## [2.2.0] - 2026-02-17
 

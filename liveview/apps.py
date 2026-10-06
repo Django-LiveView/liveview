@@ -1,9 +1,13 @@
 import importlib
+import logging
 import os
+import sys
 from pathlib import Path
+
 from django.apps import AppConfig, apps
 from django.conf import settings
-import sys
+
+logger = logging.getLogger(__name__)
 
 
 class LiveViewConfig(AppConfig):
@@ -32,11 +36,7 @@ class LiveViewConfig(AppConfig):
 
         # Skip the reloader process (only for runserver)
         run_main = os.environ.get("RUN_MAIN")
-        if run_main is not None and run_main != "true":
-            return False
-
-        # Import in all other cases
-        return True
+        return run_main is None or run_main == "true"
 
     def import_liveview_components(self):
         """
@@ -67,5 +67,5 @@ class LiveViewConfig(AppConfig):
                     else:
                         importlib.import_module(full_module_path)
                         print(f"✓ Imported: {full_module_path}")
-                except Exception as e:
-                    print(f"✗ Error importing {full_module_path}: {e}")
+                except Exception:
+                    logger.exception("✗ Error importing %s", full_module_path)
