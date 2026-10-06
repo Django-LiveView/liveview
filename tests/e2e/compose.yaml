@@ -1,0 +1,39 @@
+services:
+  redis:
+    image: redis:7-alpine
+
+  web:
+    build: .
+    environment:
+      REDIS_HOST: redis
+    volumes:
+      - ../..:/package:ro
+      - .:/app
+    ports:
+      - "8400:8000"
+    depends_on:
+      - redis
+    healthcheck:
+      test:
+        - CMD
+        - python
+        - -c
+        - import urllib.request; urllib.request.urlopen('http://localhost:8000/')
+      interval: 2s
+      timeout: 5s
+      retries: 30
+
+  # Browser tests: docker compose run --rm e2e
+  e2e:
+    build:
+      context: .
+      dockerfile: Dockerfile.playwright
+    profiles:
+      - test
+    environment:
+      BASE_URL: http://web:8000
+    volumes:
+      - .:/tests:ro
+    depends_on:
+      web:
+        condition: service_healthy

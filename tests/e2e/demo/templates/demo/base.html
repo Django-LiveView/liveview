@@ -1,0 +1,23 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en" data-room="e2e-test-room">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{{ title }}</title>
+</head>
+<body data-controller="page">
+    <nav>
+        <button id="nav-home" data-liveview-function="change_page" data-page="home" data-action="click->page#run">Home</button>
+        <button id="nav-about" data-liveview-function="change_page" data-page="about" data-action="click->page#run">About</button>
+        <button id="nav-contact" data-liveview-function="change_page" data-page="contact" data-action="click->page#run">Contact</button>
+        <button id="nav-products" data-liveview-function="change_page" data-page="products" data-action="click->page#run">Products</button>
+        <button id="nav-blog" data-liveview-function="change_page" data-page="blog" data-action="click->page#run">Blog</button>
+    </nav>
+    <main id="main">
+        {% include page_template %}
+    </main>
+    <div id="no-connection" class="no-connection--hide">No connection</div>
+    <script src="{% static 'liveview/liveview.js' %}" defer></script>
+</body>
+</html>

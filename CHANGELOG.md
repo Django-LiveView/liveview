@@ -17,6 +17,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - **Typing support**: the package now ships a `py.typed` marker (PEP 561), so type checkers use its annotations and projects running strict mypy can use django-liveview without overrides (thanks to Timothy Zykov, #4)
 - Type annotations for the public API: `liveview_handler` preserves the signature of the decorated function, and `get_liveview_path` / `get_liveview_urlpatterns` return `URLPattern` / `list[URLPattern]`
 - Typing stubs (`django-stubs`, `types-channels`, `types-setuptools`) added to the `dev` extra
+- **Test suite**: unit tests for the registry, middleware, consumer, broadcasting, routing, auto-discovery, template tags and typing (in-memory channel layer, no Redis needed), plus Playwright browser tests for the navigation history that run with Docker (`tests/e2e`)
 
 ### Changed
 - `renderHTML` no longer calls `history.pushState` directly; URL updates are handled by the new history module, which tags every entry with its index

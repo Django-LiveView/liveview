@@ -46,6 +46,7 @@ dev = [
     "pytest>=7.0.0",
     "pytest-django>=4.5.0",
     "pytest-asyncio>=0.21.0",
+    "daphne>=4.0.0",
     "black>=23.0.0",
     "ruff>=0.1.0",
     "mypy>=1.0.0",
@@ -87,5 +88,11 @@ disallow_untyped_defs = false
 
 [tool.pytest.ini_options]
 DJANGO_SETTINGS_MODULE = "tests.settings"
-python_files = ["test_*.py", "*_test.py"]
+python_files = ["test_*.py"]
 testpaths = ["tests"]
+pythonpath = ["."]
+# Browser tests run in Docker (see tests/e2e/README.md)
+addopts = "--ignore=tests/e2e"
+asyncio_mode = "auto"
+asyncio_default_fixture_loop_scope = "function"
+filterwarnings = ["error"]

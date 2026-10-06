@@ -1,0 +1,7 @@
+FROM mcr.microsoft.com/playwright/python:v1.63.0-noble
+
+RUN pip install --no-cache-dir "playwright==1.63.0" "pytest>=8.0" "pytest-playwright>=0.7"
+
+WORKDIR /tests
+
+CMD ["pytest"]

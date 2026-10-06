@@ -35,6 +35,7 @@ setup(
             "pytest>=7.0.0",
             "pytest-django>=4.5.0",
             "pytest-asyncio>=0.21.0",
+            "daphne>=4.0.0",
             "black>=23.0.0",
             "ruff>=0.1.0",
             "mypy>=1.0.0",
