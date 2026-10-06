@@ -30,6 +30,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - `LiveViewConsumer.connect` created a `group_add` coroutine that was never awaited (`RuntimeWarning` on every connection)
 - `send(None, data, broadcast=True)` raised `ValueError` even though broadcasting does not need a consumer; it now sends to the broadcast group, so you can broadcast from outside a handler (e.g. a background task)
 - A missing channel layer (`CHANNEL_LAYERS`) when broadcasting is now reported explicitly
+- `docs/QUICKSTART.md` used the old `django_liveview` package name and static path
 - `setup.py` `dev` extra was out of sync with `pyproject.toml`, and its URL pointed to the old repository
 
 ## [2.2.0] - 2026-02-17

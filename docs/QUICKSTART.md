@@ -23,8 +23,7 @@ pip install django-liveview channels channels-redis daphne redis
 INSTALLED_APPS = [
     "daphne",  # IMPORTANT: Must be FIRST for ASGI support
     "channels",
-    "django_liveview",
-
+    "liveview",
     # Your Django apps
     "django.contrib.admin",
     "django.contrib.auth",
@@ -64,23 +63,21 @@ from django.core.asgi import get_asgi_application
 from channels.routing import ProtocolTypeRouter, URLRouter
 from channels.auth import AuthMiddlewareStack
 from channels.security.websocket import AllowedHostsOriginValidator
-from django_liveview.routing import get_liveview_urlpatterns
+from liveview.routing import get_liveview_urlpatterns
 
 os.environ.setdefault("DJANGO_SETTINGS_MODULE", "your_project.settings")
 
 # Initialize Django ASGI application early
 django_asgi_app = get_asgi_application()
 
-application = ProtocolTypeRouter({
-    "http": django_asgi_app,
-    "websocket": AllowedHostsOriginValidator(
-        AuthMiddlewareStack(
-            URLRouter(
-                get_liveview_urlpatterns()
-            )
-        )
-    ),
-})
+application = ProtocolTypeRouter(
+    {
+        "http": django_asgi_app,
+        "websocket": AllowedHostsOriginValidator(
+            AuthMiddlewareStack(URLRouter(get_liveview_urlpatterns()))
+        ),
+    }
+)
 ```
 
 ## Step 4: Update Your Base Template
@@ -103,7 +100,7 @@ Add the required HTML attributes and JavaScript:
     {% block content %}{% endblock %}
 
     <!-- Django LiveView JavaScript (load at the end) -->
-    <script src="{% static 'django_liveview/liveview.min.js' %}" defer></script>
+    <script src="{% static 'liveview/liveview.min.js' %}" defer></script>
     {% block extra_scripts %}{% endblock %}
 </body>
 </html>
@@ -128,8 +125,9 @@ touch your_app/liveview_components/__init__.py
 
 ```python
 # your_app/liveview_components/counter.py
-from django_liveview import liveview_handler, send
+from liveview import liveview_handler, send
 from django.template.loader import render_to_string
+
 
 @liveview_handler("increment_counter")
 def increment_counter(consumer, content):
@@ -141,15 +139,11 @@ def increment_counter(consumer, content):
     new_value = current_value + 1
 
     # Render template with new value
-    html = render_to_string("counter_display.html", {
-        "value": new_value
-    })
+    html = render_to_string("counter_display.html", {"value": new_value})
 
     # Send update to client
-    send(consumer, {
-        "target": "#counter-display",
-        "html": html
-    })
+    send(consumer, {"target": "#counter-display", "html": html})
+
 
 @liveview_handler("decrement_counter")
 def decrement_counter(consumer, content):
@@ -157,14 +151,9 @@ def decrement_counter(consumer, content):
     current_value = int(content.get("data", {}).get("value", 0))
     new_value = current_value - 1
 
-    html = render_to_string("counter_display.html", {
-        "value": new_value
-    })
+    html = render_to_string("counter_display.html", {"value": new_value})
 
-    send(consumer, {
-        "target": "#counter-display",
-        "html": html
-    })
+    send(consumer, {"target": "#counter-display", "html": html})
 ```
 
 ### 5.3 Create the templates
@@ -205,6 +194,7 @@ def decrement_counter(consumer, content):
 ```python
 # your_app/views.py
 from django.shortcuts import render
+
 
 def counter_view(request):
     return render(request, "counter_page.html")
@@ -300,5 +290,5 @@ Check server console output. You should see:
 
 ## Need Help?
 
-- GitHub Issues: https://github.com/tanrax/django-liveview/issues
-- Documentation: https://github.com/tanrax/django-liveview
+- GitHub Issues: https://github.com/Django-LiveView/liveview/issues
+- Documentation: https://django-liveview.andros.dev/
