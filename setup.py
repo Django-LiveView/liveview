@@ -11,7 +11,7 @@ from pathlib import Path
 from setuptools import setup
 
 # Read the version from pyproject.toml or define it here
-__version__ = "2.2.0"
+__version__ = "2.3.0"
 
 setup(
     name="django-liveview",
