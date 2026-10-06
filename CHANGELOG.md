@@ -5,6 +5,18 @@ All notable changes to Django LiveView will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [2.5.0] - 2026-10-06
+
+### Added
+- `data-liveview-permanent`: elements that the navigation history never snapshots nor restores, for live widgets (presence counters, chats, notification areas) that were rolled back to stale values on back/forward. Inside a restored region, the live node (matched by `id`) is kept
+- `data-liveview-replay="false"` on a `<script>`: it runs when the HTML arrives but not again on back/forward
+
+### Fixed
+- Navigation history: form values (text, checkboxes, radios, selects, textareas) were lost on back/forward because snapshots only keep attributes. They are now restored; password and file fields are never stored
+- Navigation history: restoring an entry (back/forward) did not run its inline scripts, so any state they set outside the region (body classes, active menu links...) kept the values of the page you left, and the event listeners they added were lost. Restored regions now run their scripts again, once each and bound to their own region (`el`), after calling `el.__cleanup()`
+- Inline scripts are no longer removed from the HTML inserted by `renderHTML`, so the DOM matches a server render and history snapshots include them. They are still executed only once per render (inserting HTML never runs them)
+- Leading `<script>` tags of an HTML fragment were moved out of it by `DOMParser`; fragments are now parsed with a `<template>`
+
 ## [2.4.0] - 2026-10-06
 
 ### Added
