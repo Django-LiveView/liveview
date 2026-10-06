@@ -43,9 +43,12 @@ following the [contribution guidelines](https://git.andros.dev/andros/contribute
 ### Prerequisites
 
 - Python 3.10+
-- Node.js 18+
-- Redis
+- [uv](https://docs.astral.sh/uv/)
+- Node.js 18+ (to build the JavaScript)
+- Docker (for the browser tests)
 - Git
+
+Redis is not needed: unit tests use the in-memory channel layer and the browser tests start their own Redis.
 
 ### Setup
 
@@ -78,11 +81,15 @@ uv run pytest tests/test_decorators.py::test_register_stores_handler_by_name
 ```
 
 Browser tests (Playwright) for the navigation history, against the demo
-project in `tests/e2e`, using Docker:
+project in `tests/e2e`, using Docker. They load the built JavaScript, so
+build it first after changing `frontend/`:
 
 ```bash
 cd tests/e2e
 docker compose run --rm e2e
+
+# Clean up when finished
+docker compose --profile test down
 ```
 
 See `tests/e2e/README.md` for details.
@@ -116,27 +123,38 @@ npm run build:min
 npm run watch
 ```
 
+The build writes `liveview/static/liveview/liveview.js` and `liveview.min.js`.
+Copy both to `django_liveview/static/django_liveview/` as well (old path, still
+shipped), so the two copies stay identical. Commit the built files together
+with the source change.
+
 ## Project Structure
 
 ```
 django-liveview/
-├── liveview/              # Main Python package
-│   ├── __init__.py
-│   ├── apps.py            # App configuration
-│   ├── consumers.py       # WebSocket consumer
-│   ├── decorators.py      # Handler decorators
-│   ├── connections.py     # Connection utilities
-│   ├── routing.py         # URL routing helpers
-│   ├── py.typed           # PEP 561 typing marker
-│   └── static/            # Built JavaScript assets
-├── frontend/              # JavaScript source
+├── liveview/                  # Main Python package
+│   ├── __init__.py            # Public API: send, liveview_handler, liveview_registry
+│   ├── apps.py                # Auto-discovery of liveview_components modules
+│   ├── consumers.py           # WebSocket consumer
+│   ├── decorators.py          # Handler registry and decorator
+│   ├── connections.py         # send() and broadcasting
+│   ├── routing.py             # WebSocket URL patterns
+│   ├── templatetags/          # {% liveview_room_uuid %}
+│   ├── py.typed               # PEP 561 typing marker
+│   └── static/liveview/       # Built JavaScript
+├── django_liveview/static/    # Copy of the built JavaScript (old path)
+├── frontend/                  # JavaScript source
 │   ├── controllers/
+│   │   └── page_controller.js # Stimulus controller: data-liveview-* attributes
 │   ├── mixins/
+│   │   ├── history.js         # Back/forward navigation history
+│   │   ├── miscellaneous.js   # renderHTML and scroll helpers
+│   │   └── scripts.js         # Execution of inline scripts
 │   ├── main.js
-│   └── webSocketsCli.js
-├── tests/                 # Python unit tests
-│   └── e2e/               # Demo project and browser tests
-└── docs/                  # Documentation
+│   └── webSocketsCli.js       # Connection, reconnection and message queue
+├── tests/                     # Python unit tests
+│   └── e2e/                   # Demo project and browser tests
+└── docs/                      # Documentation
 ```
 
 ## Coding Standards
@@ -200,8 +218,8 @@ refactor: simplify handler registration
 
 - Update README.md for user-facing changes
 - Add docstrings to new Python functions
-- Update CHANGELOG.md
-- Create/update docs in `docs/` for major features
+- Update CHANGELOG.md (Keep a Changelog: `Added` / `Changed` / `Fixed`)
+- Update the docs in `docs/`: `FRONTEND.md` for attributes and `send()` keys, `BROWSER_HISTORY.md` for back/forward behaviour
 
 ## Testing Guidelines
 
@@ -248,21 +266,24 @@ def test_error_handling(consumer):
 
 (For maintainers)
 
-1. Update version in `pyproject.toml`, `setup.py` and `liveview/__init__.py`
+1. Check the latest version published on PyPI before choosing the number:
+   `echo django-liveview | uv pip compile --no-deps -`
+2. Choose the number with [Semantic Versioning](https://semver.org/): new API
+   or visible behaviour changes are a minor version
+3. Update the version in `pyproject.toml`, `setup.py` and `liveview/__init__.py`
    (`tests/test_version.py` checks they match)
-2. Update `CHANGELOG.md`
-3. Create git tag: `git tag v0.x.x`
-4. Push tag: `git push origin v0.x.x`
-5. Build package: `python -m build`
-6. Publish to PyPI: `twine upload dist/*`
-7. Create GitHub release
+4. Move the `CHANGELOG.md` entries to a section with the version and date
+5. Commit (`chore: bump version to X.Y.Z`) and push
+6. Create and push an annotated tag:
+   `git tag -a vX.Y.Z -m "Release vX.Y.Z - description"` and `git push origin vX.Y.Z`
+7. Build: `rm -rf dist && uv build`
+8. Publish: `uv publish --token <token>`
+9. Verify: `uv run --isolated --no-project --refresh --with "django-liveview==X.Y.Z" python -c "import liveview; print(liveview.__version__)"`
 
 ## Questions?
 
-Feel free to ask questions in:
-- GitHub Issues
-- Pull Request comments
-- Discussions (if enabled)
+Feel free to ask questions in GitHub Issues or by email, following the
+[contribution guidelines](https://git.andros.dev/andros/contribute).
 
 ## License
 

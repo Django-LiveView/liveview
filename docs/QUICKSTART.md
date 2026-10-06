@@ -11,8 +11,10 @@ This guide will help you set up Django LiveView in a new or existing Django proj
 ## Step 1: Installation
 
 ```bash
-pip install django-liveview channels channels-redis daphne redis
+pip install django-liveview daphne
 ```
+
+`channels` and `channels-redis` are installed as dependencies of `django-liveview`.
 
 ## Step 2: Configure Django Settings
 
@@ -86,10 +88,9 @@ Add the required HTML attributes and JavaScript:
 
 ```html
 <!-- templates/base.html -->
-{% load static %}
+{% load static liveview %}
 <!DOCTYPE html>
-<html lang="en"
-      data-room="{% if request.user.is_authenticated %}user_{{ request.user.id }}{% else %}anonymous_{{ request.session.session_key }}{% endif %}">
+<html lang="en" data-room="{% liveview_room_uuid %}">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -107,8 +108,8 @@ Add the required HTML attributes and JavaScript:
 ```
 
 **Important attributes:**
-- `data-room` on `<html>`: Unique identifier for WebSocket room
-- `data-controller="page"` on `<body>`: Activates Stimulus controller
+- `data-room` on `<html>`: identifier of the WebSocket room. `{% liveview_room_uuid %}` generates a random one, so rooms cannot be guessed (avoid predictable values such as user ids: anyone who knows a room name can connect to it). The browser keeps the first room it receives in `localStorage` and reuses it.
+- `data-controller="page"` on `<body>`: activates the Stimulus controller
 
 ## Step 5: Create Your First LiveView Component
 
@@ -132,7 +133,7 @@ from django.template.loader import render_to_string
 @liveview_handler("increment_counter")
 def increment_counter(consumer, content):
     """Increment counter and update the UI"""
-    # Get current value from form data
+    # Get the current value from the data-value attribute of the button
     current_value = int(content.get("data", {}).get("value", 0))
 
     # Increment
@@ -160,21 +161,19 @@ def decrement_counter(consumer, content):
 
 ```html
 <!-- templates/counter_display.html -->
-<div id="counter-display">
-    <h2>Count: {{ value }}</h2>
-    <button
-        data-liveview-function="decrement_counter"
-        data-data-value="{{ value }}"
-        data-action="click->page#run">
-        -
-    </button>
-    <button
-        data-liveview-function="increment_counter"
-        data-data-value="{{ value }}"
-        data-action="click->page#run">
-        +
-    </button>
-</div>
+<h2>Count: {{ value }}</h2>
+<button
+    data-liveview-function="decrement_counter"
+    data-value="{{ value }}"
+    data-action="click->page#run">
+    -
+</button>
+<button
+    data-liveview-function="increment_counter"
+    data-value="{{ value }}"
+    data-action="click->page#run">
+    +
+</button>
 ```
 
 ```html
@@ -184,10 +183,18 @@ def decrement_counter(consumer, content):
 {% block content %}
 <div class="container">
     <h1>Counter Example</h1>
-    {% include "counter_display.html" with value=0 %}
+    <div id="counter-display">
+        {% include "counter_display.html" with value=0 %}
+    </div>
 </div>
 {% endblock %}
 ```
+
+How it works:
+
+- `data-action="click->page#run"` sends the click to the server, calling the handler named in `data-liveview-function`.
+- Every other `data-*` attribute of the element arrives in `content["data"]`, with its name in snake_case: `data-value` becomes `content["data"]["value"]`.
+- `send()` replaces the content of the `target` element (`#counter-display`) with the rendered HTML. That is why `counter_display.html` only contains the inside of the container.
 
 ### 5.4 Create a view
 
@@ -270,10 +277,10 @@ Check server console output. You should see:
 **Problem:** `Unknown function: my_function`
 
 **Solutions:**
-1. Check `liveview_components/__init__.py` exists
-2. Verify the component file doesn't start with underscore
+1. Check the file is inside a `liveview_components` directory of an app listed in `INSTALLED_APPS`
+2. Verify the component file doesn't start with underscore (those are skipped)
 3. Restart the server
-4. Check server console for import errors
+4. Check server console for import errors (logged with their traceback)
 
 ### Room Not Defined
 
@@ -283,10 +290,9 @@ Check server console output. You should see:
 
 ## Next Steps
 
-- Read the [full documentation](../README.md)
-- Learn about [advanced features](ADVANCED.md)
-- Check out [examples](../examples/)
-- Explore [best practices](BEST_PRACTICES.md)
+- [Frontend reference](FRONTEND.md): every `data-liveview-*` attribute and every key `send()` accepts
+- [Browser history](BROWSER_HISTORY.md): back/forward support for SPA navigation
+- [Full documentation](https://django-liveview.andros.dev/docs/install/)
 
 ## Need Help?
 

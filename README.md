@@ -43,9 +43,16 @@ Learn about:
 - Handlers and frontend integration
 - Forms and broadcasting
 - Advanced features (infinite scroll, auto-focus, debounce)
+- Browser history (back and forward buttons in SPA navigation)
 - Error handling and testing
 - Deployment strategies
 - API reference and troubleshooting
+
+Reference guides in this repository:
+- [Quick Start](docs/QUICKSTART.md)
+- [Frontend reference](docs/FRONTEND.md): `data-liveview-*` attributes, what handlers receive and every `send()` key
+- [Browser history](docs/BROWSER_HISTORY.md): how back/forward restores pages, inline scripts, live widgets and form fields
+- [Contributing](docs/CONTRIBUTING.md)
 
 ---
 
