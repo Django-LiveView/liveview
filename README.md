@@ -1,6 +1,6 @@
 # Django LiveView
 
-![Django LiveView](https://github.com/Django-LiveView/starter-template/raw/main/brand_assets/github%20social%20preview.jpg)
+![Django LiveView: build real-time apps, write Python, not JavaScript](https://raw.githubusercontent.com/Django-LiveView/liveview/main/docs/images/readme-header.png)
 
 **Build real-time, reactive interfaces with Django using WebSockets — write Python, not JavaScript.**
 
