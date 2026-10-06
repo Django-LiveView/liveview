@@ -14,9 +14,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Intra-page state (counters, removed elements, appended lists) is restored "as you left it", with baselines for entries older than the first mutation of a region
 - Graceful fallbacks: full page reload when an entry is unknown or pruned, memory-only mode when the storage quota is exceeded
 - New `liveview:history-restored` event dispatched on `document` after each restore
+- **Typing support**: the package now ships a `py.typed` marker (PEP 561), so type checkers use its annotations and projects running strict mypy can use django-liveview without overrides (thanks to Timothy Zykov, #4)
+- Type annotations for the public API: `liveview_handler` preserves the signature of the decorated function, and `get_liveview_path` / `get_liveview_urlpatterns` return `URLPattern` / `list[URLPattern]`
+- Typing stubs (`django-stubs`, `types-channels`, `types-setuptools`) added to the `dev` extra
 
 ### Changed
 - `renderHTML` no longer calls `history.pushState` directly; URL updates are handled by the new history module, which tags every entry with its index
+- `LiveviewHandlerRegistry.get_handler` is now annotated as returning `Callable | None`, matching its actual behaviour when the handler does not exist
 
 ## [2.2.0] - 2026-02-17
 

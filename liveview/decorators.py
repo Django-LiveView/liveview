@@ -3,9 +3,10 @@ Modular decorator system for handling LiveView handlers.
 """
 
 import logging
-from typing import Callable, TypeVar, Any, cast
 from collections.abc import Callable
 from functools import wraps
+from typing import Any, TypeVar, cast
+
 from liveview.connections import send
 
 logger = logging.getLogger(__name__)
@@ -16,7 +17,7 @@ F = TypeVar("F", bound=Callable[..., Any])
 class LiveviewHandlerRegistry:
     """Registry for managing LiveView handlers."""
 
-    def __init__(self):
+    def __init__(self) -> None:
         self._handlers: dict[str, Callable] = {}
         self._middleware: list = []
 
@@ -41,7 +42,7 @@ class LiveviewHandlerRegistry:
                     send(
                         consumer,
                         {
-                            "error": f"Handler error: {str(e)}",
+                            "error": f"Handler error: {e!s}",
                             "function": function_name,
                         },
                     )

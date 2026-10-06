@@ -1,10 +1,12 @@
 """
 Helper functions for routing LiveView WebSocket connections.
 """
-from typing import cast, Any
-from collections.abc import Callable
 
-from django.urls import path, URLPattern
+from collections.abc import Callable
+from typing import Any, cast
+
+from django.urls import URLPattern, path
+
 from liveview.consumers import LiveViewConsumer
 
 
