@@ -11,6 +11,7 @@ recursive-include liveview/management *
 
 # Include frontend source (for development/customization)
 recursive-include frontend *.js *.json
+prune frontend/node_modules
 
 # Exclude unnecessary files
 global-exclude __pycache__

@@ -1,3 +1,5 @@
+import { trackRegion, trackRemoval, pushNavigation } from "./history.js";
+
 /**
  * Gets the current language attribute from the HTML document
  * @returns {string|null} The language code from the html lang attribute
@@ -49,6 +51,16 @@ function scrollToTop () {
 export const renderHTML = (data) => {
   const targetHTML = document.querySelector(data.target);
   if (targetHTML) {
+    // History bookkeeping: record the state of the page BEFORE mutating it,
+    // so back/forward can restore it later
+    if (data.remove) {
+      trackRemoval(targetHTML);
+    } else {
+      trackRegion(data.target);
+    }
+    if (data.url) {
+      pushNavigation(data.url);
+    }
     // Remove the content of the target
     if (data.remove) {
         if (targetHTML.__cleanup) {
@@ -95,8 +107,7 @@ export const renderHTML = (data) => {
     console.error(`Target ${data.target} not found`);
     return;
   }
-    // Update URL
-    if (data.url) history.pushState({}, "", data.url);
+    // URL is already updated by pushNavigation (history bookkeeping)
     // Update title
     if (data.title) document.title = data.title;
 }

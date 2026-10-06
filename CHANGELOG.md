@@ -5,6 +5,19 @@ All notable changes to Django LiveView will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [2.3.0] - 2026-06-03
+
+### Added
+- **Browser history support**: back and forward buttons now restore the page state. Before any DOM region is overwritten or removed, its previous state is recorded in an ordered journal (sessionStorage, per tab), and `popstate` replays the exact inverse (or direct) process
+- Snapshots include metadata per history entry: URL, title, `lang` attribute and scroll position
+- Multi-step jumps (`history.go(-3)`), zigzag navigation (back/forward/back) and history branching (navigating after going back discards forward entries, like native browser history)
+- Intra-page state (counters, removed elements, appended lists) is restored "as you left it", with baselines for entries older than the first mutation of a region
+- Graceful fallbacks: full page reload when an entry is unknown or pruned, memory-only mode when the storage quota is exceeded
+- New `liveview:history-restored` event dispatched on `document` after each restore
+
+### Changed
+- `renderHTML` no longer calls `history.pushState` directly; URL updates are handled by the new history module, which tags every entry with its index
+
 ## [2.2.0] - 2026-02-17
 
 ### Added
