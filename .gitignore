@@ -30,6 +30,7 @@ env/
 ENV/
 env.bak/
 venv.bak/
+uv.lock
 
 # Django
 *.log
