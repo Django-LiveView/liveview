@@ -1,9 +1,11 @@
-from channels.generic.websocket import JsonWebsocketConsumer
-from liveview.decorators import liveview_registry
 import logging
-from asgiref.sync import async_to_sync
-from liveview.connections import send
 import re
+
+from asgiref.sync import async_to_sync
+from channels.generic.websocket import JsonWebsocketConsumer
+
+from liveview.connections import BROADCAST_GROUP, send
+from liveview.decorators import liveview_registry
 
 logger = logging.getLogger(__name__)
 
@@ -32,12 +34,11 @@ class LiveViewConsumer(JsonWebsocketConsumer):
     Consumer for handling live view updates via WebSocket.
     """
 
-    broadcast_group = "broadcast"
+    broadcast_group = BROADCAST_GROUP
 
     def connect(self):
         self.room_name = self.scope["url_route"]["kwargs"]["room_name"]
-        self.room_group_name = "room_%s" % self.room_name
-        self.channel_layer.group_add(self.room_group_name, self.channel_name)
+        self.room_group_name = f"room_{self.room_name}"
         async_to_sync(self.channel_layer.group_add)(
             self.room_group_name, self.channel_name
         )
