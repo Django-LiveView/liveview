@@ -52,3 +52,11 @@ def add_post(consumer, content):
         "demo/add_post_button.html", {"next": next_number + 1}
     )
     send(consumer, {"target": "#add-post-area", "html": button_html})
+
+
+@liveview_handler("tick")
+def tick(consumer, content):
+    """Live widget outside the navigated region (data-liveview-permanent)."""
+    value = int(content["data"]["value"]) + 1
+    html = render_to_string("demo/ticker.html", {"value": value})
+    send(consumer, {"target": "#ticker", "html": html})

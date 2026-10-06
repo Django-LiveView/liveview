@@ -14,6 +14,7 @@
         <button id="nav-products" data-liveview-function="change_page" data-page="products" data-action="click->page#run">Products</button>
         <button id="nav-blog" data-liveview-function="change_page" data-page="blog" data-action="click->page#run">Blog</button>
     </nav>
+    <div id="ticker" data-liveview-permanent>{% include "demo/ticker.html" with value=0 %}</div>
     <main id="main">
         {% include page_template %}
     </main>

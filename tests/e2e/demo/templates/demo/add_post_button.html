@@ -2,3 +2,6 @@
         data-liveview-function="add_post"
         data-next="{{ next }}"
         data-action="click->page#run">Add post</button>
+<script>
+    window.addPostButtonRuns = (window.addPostButtonRuns || 0) + 1;
+</script>

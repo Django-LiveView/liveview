@@ -1,2 +1,21 @@
 <h1 id="page-title">About</h1>
 <p>We build real-time Django apps.</p>
+{% include "demo/live_box.html" %}
+<form id="about-form">
+    <input id="about-name" name="name" type="text">
+    <input id="about-password" name="password" type="password">
+    <input id="about-agree" name="agree" type="checkbox">
+    <select id="about-color" name="color">
+        <option value="red">Red</option>
+        <option value="blue">Blue</option>
+    </select>
+    <textarea id="about-message" name="message"></textarea>
+</form>
+<button id="greet">Greet</button>
+<p id="greet-output"></p>
+<script>
+    document.body.dataset.page = "about";
+    document.getElementById("greet").addEventListener("click", function () {
+        document.getElementById("greet-output").textContent = "Hello";
+    });
+</script>

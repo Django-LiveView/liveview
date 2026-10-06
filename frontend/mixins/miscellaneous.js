@@ -1,4 +1,5 @@
 import { trackRegion, trackRemoval, pushNavigation } from "./history.js";
+import { SCRIPT_SELECTOR, runScripts } from "./scripts.js";
 
 /**
  * Gets the current language attribute from the HTML document
@@ -69,13 +70,17 @@ export const renderHTML = (data) => {
         }
         targetHTML.remove();
     } else {
-        const parser = new DOMParser();
-        const doc = parser.parseFromString(data.html, 'text/html');
+        // A <template> parses the fragment as is (DOMParser would move leading
+        // scripts into <head>). Scripts stay in the markup: inserting HTML
+        // never executes them, and keeping them lets history snapshots
+        // replay them on back/forward, like a full page load would.
+        const template = document.createElement('template');
+        template.innerHTML = data.html;
         const scripts = Array.from(
-            doc.querySelectorAll('script:not([type]), script[type="text/javascript"]')
+            template.content.querySelectorAll(SCRIPT_SELECTOR),
+            script => script.textContent
         );
-        scripts.forEach(s => s.remove());
-        const htmlText = doc.body.innerHTML;
+        const htmlText = template.innerHTML;
         if (data.append) {
             // Add the content to the target
             targetHTML.insertAdjacentHTML("beforeend", htmlText);
@@ -90,14 +95,7 @@ export const renderHTML = (data) => {
         }
         // Execute scripts with the target element as local context.
         // 'el' and 'this' inside the script refer to the target element.
-        for (const script of scripts) {
-            try {
-                const fn = new Function('el', script.textContent);
-                fn.call(targetHTML, targetHTML);
-            } catch (e) {
-                console.error('LiveView script error:', e);
-            }
-        }
+        runScripts(targetHTML, scripts);
         // If it is a new page or is backward, the scroll returns to the beginning
         if ( data.html && !data.scroll && data.url) {
           setTimeout(() => { scrollToTop() }, 50);

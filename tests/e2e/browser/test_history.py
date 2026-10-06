@@ -225,6 +225,135 @@ def test_restore_dispatches_history_restored_event(open_page):
     assert events[0]["url"].endswith("/")
 
 
+def test_restore_runs_the_scripts_of_the_restored_page(open_page):
+    # Given
+    page = open_page("/")
+    navigate(page, "about")
+    expect(page.locator("body")).to_have_attribute("data-page", "about")
+
+    # When / Then
+    page.go_back()
+    expect_page(page, "home")
+    expect(page.locator("body")).to_have_attribute("data-page", "home")
+    page.go_forward()
+    expect_page(page, "about")
+    expect(page.locator("body")).to_have_attribute("data-page", "about")
+
+
+def test_listeners_added_by_scripts_work_after_restore(open_page):
+    # Given
+    page = open_page("/")
+    navigate(page, "about")
+    page.go_back()
+    expect_page(page, "home")
+    page.go_forward()
+    expect_page(page, "about")
+
+    # When
+    page.click("#greet")
+
+    # Then
+    expect(page.locator("#greet-output")).to_have_text("Hello")
+
+
+def test_scripts_of_nested_regions_run_once_on_restore(open_page):
+    # Given
+    page = open_page("/blog/")
+    page.click("#add-post")
+    expect(page.locator(".post")).to_have_count(2)
+    assert page.evaluate("window.addPostButtonRuns") == 2
+    navigate(page, "contact")
+
+    # When
+    page.go_back()
+    expect_page(page, "blog")
+
+    # Then
+    assert page.evaluate("window.addPostButtonRuns") == 3
+
+
+def test_scripts_marked_not_to_replay_only_run_on_render(open_page):
+    # Given
+    page = open_page("/")
+    navigate(page, "about")
+
+    # When
+    page.go_back()
+    expect_page(page, "home")
+
+    # Then
+    assert page.evaluate("window.homeOnceRuns") == 1
+    navigate(page, "contact")
+    navigate(page, "home")
+    assert page.evaluate("window.homeOnceRuns") == 2
+
+
+def test_permanent_widget_keeps_its_live_state(open_page):
+    # Given
+    page = open_page("/")
+    page.click("#ticker-button")
+    expect(page.locator("#ticker-value")).to_have_text("1")
+    navigate(page, "about")
+    page.click("#ticker-button")
+    expect(page.locator("#ticker-value")).to_have_text("2")
+
+    # When
+    page.go_back()
+    expect_page(page, "home")
+
+    # Then
+    expect(page.locator("#ticker-value")).to_have_text("2")
+
+
+def test_permanent_element_inside_a_restored_region_is_kept_live(open_page):
+    # Given
+    page = open_page("/")
+    navigate(page, "about")
+    page.evaluate("document.querySelector('#live-box').textContent = 'live'")
+
+    # When
+    page.go_back()
+    expect_page(page, "home")
+
+    # Then
+    expect(page.locator("#live-box")).to_have_text("live")
+
+
+def test_form_values_are_restored(open_page):
+    # Given
+    page = open_page("/about/")
+    page.fill("#about-name", "Ada")
+    page.fill("#about-password", "secret")
+    page.check("#about-agree")
+    page.select_option("#about-color", "blue")
+    page.fill("#about-message", "Hello there")
+    navigate(page, "contact")
+
+    # When
+    page.go_back()
+    expect_page(page, "about")
+
+    # Then
+    expect(page.locator("#about-name")).to_have_value("Ada")
+    expect(page.locator("#about-agree")).to_be_checked()
+    expect(page.locator("#about-color")).to_have_value("blue")
+    expect(page.locator("#about-message")).to_have_value("Hello there")
+
+
+def test_passwords_are_never_stored(open_page):
+    # Given
+    page = open_page("/about/")
+    page.fill("#about-password", "secret")
+
+    # When
+    navigate(page, "contact")
+
+    # Then
+    assert "secret" not in page.evaluate("sessionStorage.getItem('liveview-history')")
+    page.go_back()
+    expect(page.locator("#about-password")).to_have_value("")
+
+
 def test_back_after_reload_restores_previous_page(open_page, reload_page):
     # Given
     page = open_page("/")

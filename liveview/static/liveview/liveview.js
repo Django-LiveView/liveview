@@ -2538,6 +2538,28 @@
     Controller.outlets = [];
     Controller.values = {};
 
+    // Inline scripts that LiveView executes (same rule as the browser: classic
+    // scripts only, not JSON, templates or modules)
+    const SCRIPT_SELECTOR = 'script:not([type]), script[type="text/javascript"]';
+
+    /**
+     * Execute scripts with the given element as local context.
+     * 'el' and 'this' inside the script refer to the element.
+     * @param {Element} element - Element bound to 'el' and 'this'
+     * @param {Array<string>} sources - Source code of each script, in order
+     * @return {void}
+     */
+    function runScripts(element, sources) {
+      for (const source of sources) {
+        try {
+          const fn = new Function('el', source);
+          fn.call(element, element);
+        } catch (e) {
+          console.error('LiveView script error:', e);
+        }
+      }
+    }
+
     /*
        LiveView navigation history.
 
@@ -2562,8 +2584,8 @@
                lang: string,         // <html lang> when the entry was left
                scrollX: number,
                scrollY: number,
-               regions: {            // snapshot of every touched region (innerHTML)
-                 "<selector>": "<html>"
+               regions: {            // snapshot of every touched region (innerHTML),
+                 "<selector>": "<html>"  // inline scripts included: replayed on restore
                }
              }
            ],
@@ -2580,6 +2602,7 @@
        target entry even when the user jumps several steps at once.
      */
 
+
     const STORAGE_KEY = "liveview-history";
     const MAX_SNAPSHOT_ENTRIES = 50;
 
@@ -2590,6 +2613,14 @@
       "data-intersection-threshold-used",
       "data-keyboard-map-initialized"
     ];
+
+    // Elements that keep their live state across back/forward (presence
+    // widgets, notification areas...): never snapshotted nor restored. Inside a
+    // restored region, the live node is kept (matched by id).
+    const PERMANENT_SELECTOR = "[data-liveview-permanent]";
+
+    // Form fields whose value must never be written to sessionStorage
+    const UNSAFE_INPUT_TYPES = ["password", "file"];
 
     let state = null;
     let memoryOnly = false;
@@ -2673,12 +2704,43 @@
     }
 
     /**
+     * Copy the live state of form fields into attributes, so it survives the
+     * HTML serialization (typed text, checkboxes and selected options are
+     * properties, not attributes)
+     * @param {Element} source - Live element
+     * @param {Element} clone - Deep clone of the element
+     * @return {void}
+     */
+    function persistFormState(source, clone) {
+      const selector = "input, textarea, select";
+      const fields = source.querySelectorAll(selector);
+      const clonedFields = clone.querySelectorAll(selector);
+      fields.forEach((field, position) => {
+        const cloned = clonedFields[position];
+        const tagName = field.tagName.toLowerCase();
+        if (tagName === "textarea") {
+          cloned.textContent = field.value;
+        } else if (tagName === "select") {
+          Array.from(field.options).forEach((option, index) => {
+            cloned.options[index].toggleAttribute("selected", option.selected);
+          });
+        } else if (field.type === "checkbox" || field.type === "radio") {
+          cloned.toggleAttribute("checked", field.checked);
+        } else if (!UNSAFE_INPUT_TYPES.includes(field.type)) {
+          cloned.setAttribute("value", field.value);
+        }
+      });
+    }
+
+    /**
      * Get the innerHTML of an element with internal marker attributes removed
+     * and the current form values kept
      * @param {Element} element - Element to snapshot
      * @return {string} Sanitized innerHTML
      */
     function getRegionHTML(element) {
       const clone = element.cloneNode(true);
+      persistFormState(element, clone);
       INTERNAL_ATTRIBUTES.forEach(attribute => {
         clone.querySelectorAll(`[${attribute}]`).forEach(node => {
           node.removeAttribute(attribute);
@@ -2756,12 +2818,12 @@
      * Ancestor regions are applied before descendant ones, re-querying each
      * selector so replaced nodes are resolved again.
      * @param {Object} regions - Map of selector to innerHTML
-     * @return {void}
+     * @return {Array<Element>} Restored elements, ancestors first
      */
     function restoreRegions(regions) {
       const items = Object.entries(regions)
         .map(([selector, html]) => ({ selector, html, element: document.querySelector(selector) }))
-        .filter(item => item.element);
+        .filter(item => item.element && !item.element.closest(PERMANENT_SELECTOR));
 
       // Ancestors first, so inner snapshots are applied to the fresh nodes
       items.sort((a, b) => {
@@ -2770,11 +2832,61 @@
         return 0;
       });
 
+      const restored = [];
       items.forEach(item => {
         const element = document.querySelector(item.selector);
         if (element) {
+          // Same contract as renderHTML: release timers, observers... first
+          if (element.__cleanup) {
+            element.__cleanup();
+            delete element.__cleanup;
+          }
+          const permanents = Array.from(element.querySelectorAll(PERMANENT_SELECTOR))
+            .filter(permanent => permanent.id);
           element.innerHTML = item.html;
+          // Put the live permanent nodes back in place of their stale copies
+          permanents.forEach(permanent => {
+            const copy = element.querySelector(`#${CSS.escape(permanent.id)}`);
+            if (copy) {
+              copy.replaceWith(permanent);
+            }
+          });
+          restored.push(element);
         }
+      });
+      return restored;
+    }
+
+    /**
+     * Run the inline scripts of the restored regions, as renderHTML did when
+     * the content arrived: innerHTML does not execute them, and pages rely on
+     * them for state outside the region (body classes, active links...) and
+     * for event listeners. Each script runs once, bound to its innermost
+     * restored region, so nested regions do not execute it twice. Scripts
+     * marked with data-liveview-replay="false" and those inside permanent
+     * elements (they were not restored) are skipped.
+     * @param {Array<Element>} elements - Restored elements, ancestors first
+     * @return {void}
+     */
+    function runRestoredScripts(elements) {
+      const regions = new Set(elements);
+      elements.forEach(element => {
+        if (!element.isConnected) {
+          return;
+        }
+        const sources = Array.from(element.querySelectorAll(SCRIPT_SELECTOR))
+          .filter(script => {
+            if (script.dataset.liveviewReplay === "false" || script.closest(PERMANENT_SELECTOR)) {
+              return false;
+            }
+            let owner = script.parentElement;
+            while (owner && !regions.has(owner)) {
+              owner = owner.parentElement;
+            }
+            return owner === element;
+          })
+          .map(script => script.textContent);
+        runScripts(element, sources);
       });
     }
 
@@ -2797,7 +2909,7 @@
         }
       });
 
-      restoreRegions(regions);
+      const restored = restoreRegions(regions);
 
       if (entry.title != null) {
         document.title = entry.title;
@@ -2805,6 +2917,7 @@
       if (entry.lang != null) {
         document.documentElement.setAttribute("lang", entry.lang);
       }
+      runRestoredScripts(restored);
       setTimeout(() => {
         window.scrollTo(entry.scrollX || 0, entry.scrollY || 0);
       }, 50);
@@ -2890,7 +3003,7 @@
     /**
      * Record a region BEFORE it is overwritten. The first time a region is ever
      * touched, its previous state is kept as a baseline so older history entries
-     * can restore it.
+     * can restore it. Regions inside permanent elements are never recorded.
      * @param {string} selector - CSS selector of the region (data.target)
      * @return {void}
      */
@@ -2902,7 +3015,7 @@
         return;
       }
       const element = document.querySelector(selector);
-      if (!element) {
+      if (!element || element.closest(PERMANENT_SELECTOR)) {
         return;
       }
       state.touched.push(selector);
@@ -2998,13 +3111,17 @@
             }
             targetHTML.remove();
         } else {
-            const parser = new DOMParser();
-            const doc = parser.parseFromString(data.html, 'text/html');
+            // A <template> parses the fragment as is (DOMParser would move leading
+            // scripts into <head>). Scripts stay in the markup: inserting HTML
+            // never executes them, and keeping them lets history snapshots
+            // replay them on back/forward, like a full page load would.
+            const template = document.createElement('template');
+            template.innerHTML = data.html;
             const scripts = Array.from(
-                doc.querySelectorAll('script:not([type]), script[type="text/javascript"]')
+                template.content.querySelectorAll(SCRIPT_SELECTOR),
+                script => script.textContent
             );
-            scripts.forEach(s => s.remove());
-            const htmlText = doc.body.innerHTML;
+            const htmlText = template.innerHTML;
             if (data.append) {
                 // Add the content to the target
                 targetHTML.insertAdjacentHTML("beforeend", htmlText);
@@ -3019,14 +3136,7 @@
             }
             // Execute scripts with the target element as local context.
             // 'el' and 'this' inside the script refer to the target element.
-            for (const script of scripts) {
-                try {
-                    const fn = new Function('el', script.textContent);
-                    fn.call(targetHTML, targetHTML);
-                } catch (e) {
-                    console.error('LiveView script error:', e);
-                }
-            }
+            runScripts(targetHTML, scripts);
             // If it is a new page or is backward, the scroll returns to the beginning
             if ( data.html && !data.scroll && data.url) {
               setTimeout(() => { scrollToTop(); }, 50);

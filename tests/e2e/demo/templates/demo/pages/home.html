@@ -1,3 +1,10 @@
 <h1 id="page-title">Home</h1>
 <p>Welcome to the home page.</p>
 {% include "demo/counter.html" with value=0 %}
+{% include "demo/live_box.html" %}
+<script>
+    document.body.dataset.page = "home";
+</script>
+<script data-liveview-replay="false">
+    window.homeOnceRuns = (window.homeOnceRuns || 0) + 1;
+</script>
