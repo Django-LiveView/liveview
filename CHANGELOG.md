@@ -18,11 +18,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Type annotations for the public API: `liveview_handler` preserves the signature of the decorated function, and `get_liveview_path` / `get_liveview_urlpatterns` return `URLPattern` / `list[URLPattern]`
 - Typing stubs (`django-stubs`, `types-channels`, `types-setuptools`) added to the `dev` extra
 - **Test suite**: unit tests for the registry, middleware, consumer, broadcasting, routing, auto-discovery, template tags and typing (in-memory channel layer, no Redis needed), plus Playwright browser tests for the navigation history that run with Docker (`tests/e2e`)
+- `pre-commit` hooks running `ruff check` and `ruff format`
 
 ### Changed
 - `renderHTML` no longer calls `history.pushState` directly; URL updates are handled by the new history module, which tags every entry with its index
 - `LiveviewHandlerRegistry.get_handler` is now annotated as returning `Callable | None`, matching its actual behaviour when the handler does not exist
 - Errors while importing a `liveview_components` module are logged with their traceback (`logging`) instead of printed
+- `ruff format` replaces `black` in the `dev` extra
 
 ### Fixed
 - `LiveViewConsumer.connect` created a `group_add` coroutine that was never awaited (`RuntimeWarning` on every connection)

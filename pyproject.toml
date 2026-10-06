@@ -47,8 +47,8 @@ dev = [
     "pytest-django>=4.5.0",
     "pytest-asyncio>=0.21.0",
     "daphne>=4.0.0",
-    "black>=23.0.0",
-    "ruff>=0.1.0",
+    "ruff>=0.16.0",
+    "pre-commit>=4.0.0",
     "mypy>=1.0.0",
     "django-stubs>=5.0.0",
     "types-setuptools>=84.0.0",
@@ -71,10 +71,6 @@ liveview = [
     "static/liveview/*.map",
     "templates/liveview/*.html",
 ]
-
-[tool.black]
-line-length = 88
-target-version = ['py310', 'py311', 'py312']
 
 [tool.ruff]
 line-length = 88

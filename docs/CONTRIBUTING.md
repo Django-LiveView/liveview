@@ -10,7 +10,7 @@ Be respectful, inclusive, and professional. Harassment and discrimination of any
 
 ### Reporting Bugs
 
-1. Check if the bug has already been reported in [Issues](https://github.com/tanrax/django-liveview/issues)
+1. Check if the bug has already been reported in [Issues](https://github.com/Django-LiveView/liveview/issues)
 2. If not, create a new issue with:
    - Clear title and description
    - Steps to reproduce
@@ -20,22 +20,23 @@ Be respectful, inclusive, and professional. Harassment and discrimination of any
 
 ### Suggesting Features
 
-1. Check if the feature has been requested in [Issues](https://github.com/tanrax/django-liveview/issues)
+1. Check if the feature has been requested in [Issues](https://github.com/Django-LiveView/liveview/issues)
 2. Create a new issue with:
    - Clear description of the feature
    - Use cases
    - Potential implementation approach
 
-### Pull Requests
+### Sending Changes
 
-1. Fork the repository
-2. Create a feature branch (`git checkout -b feature/amazing-feature`)
-3. Make your changes
-4. Write/update tests
-5. Update documentation
-6. Commit with clear messages
-7. Push to your fork
-8. Open a Pull Request
+Pull requests are disabled on GitHub. Send your changes as patches by email,
+following the [contribution guidelines](https://git.andros.dev/andros/contribute):
+
+1. Clone the repository
+2. Make your changes
+3. Write/update tests
+4. Update documentation and `CHANGELOG.md`
+5. Commit with clear messages
+6. Generate the patches (`git format-patch origin/main`) and send them
 
 ## Development Setup
 
@@ -49,16 +50,15 @@ Be respectful, inclusive, and professional. Harassment and discrimination of any
 ### Setup
 
 ```bash
-# Clone your fork
-git clone https://github.com/YOUR-USERNAME/django-liveview.git
-cd django-liveview
+git clone https://github.com/Django-LiveView/liveview.git
+cd liveview
 
-# Create virtual environment
-python -m venv venv
-source venv/bin/activate  # On Windows: venv\Scripts\activate
+# Create the virtual environment and install development dependencies
+uv sync --extra dev
+# Or, without uv: python -m venv .venv && pip install -e ".[dev]"
 
-# Install development dependencies
-pip install -e ".[dev]"
+# Install the git hooks (ruff check and ruff format on every commit)
+uv run pre-commit install
 
 # Install frontend dependencies
 cd frontend
@@ -68,28 +68,37 @@ cd ..
 
 ### Running Tests
 
-```bash
-# Python tests
-pytest
+Unit tests (Python, no Redis needed: they use the in-memory channel layer):
 
-# With coverage
-pytest --cov=django_liveview --cov-report=html
+```bash
+uv run pytest
 
 # Specific test
-pytest tests/test_decorators.py::test_handler_registration
+uv run pytest tests/test_decorators.py::test_register_stores_handler_by_name
 ```
+
+Browser tests (Playwright) for the navigation history, against the demo
+project in `tests/e2e`, using Docker:
+
+```bash
+cd tests/e2e
+docker compose run --rm e2e
+```
+
+See `tests/e2e/README.md` for details.
 
 ### Code Quality
 
 ```bash
-# Format code with Black
-black django_liveview tests
+# Lint and format (also run by the pre-commit hook)
+uv run ruff check --fix .
+uv run ruff format .
 
-# Lint with Ruff
-ruff check django_liveview tests
+# Run every hook on all files
+uv run pre-commit run --all-files
 
-# Type check with mypy
-mypy django_liveview
+# Type check
+uv run mypy liveview
 ```
 
 ### Building JavaScript
@@ -111,22 +120,23 @@ npm run watch
 
 ```
 django-liveview/
-├── django_liveview/       # Main Python package
+├── liveview/              # Main Python package
 │   ├── __init__.py
 │   ├── apps.py            # App configuration
 │   ├── consumers.py       # WebSocket consumer
 │   ├── decorators.py      # Handler decorators
 │   ├── connections.py     # Connection utilities
 │   ├── routing.py         # URL routing helpers
+│   ├── py.typed           # PEP 561 typing marker
 │   └── static/            # Built JavaScript assets
 ├── frontend/              # JavaScript source
 │   ├── controllers/
 │   ├── mixins/
 │   ├── main.js
 │   └── webSocketsCli.js
-├── tests/                 # Python tests
-├── docs/                  # Documentation
-└── examples/              # Example projects
+├── tests/                 # Python unit tests
+│   └── e2e/               # Demo project and browser tests
+└── docs/                  # Documentation
 ```
 
 ## Coding Standards
@@ -140,12 +150,12 @@ django-liveview/
 - Use meaningful variable names
 
 ```python
-def send(consumer, data: dict, broadcast: bool = False):
+def send(consumer: Any, data: dict[str, Any], broadcast: bool = False) -> None:
     """
     Send a message to the consumer or broadcast it.
 
     Args:
-        consumer: WebSocket consumer instance
+        consumer: WebSocket consumer instance (can be None when broadcasting)
         data: Message data to send
         broadcast: Whether to broadcast to all clients
 
@@ -204,35 +214,42 @@ refactor: simplify handler registration
 
 ### Test Structure
 
+Plain pytest functions, one behaviour per test, split in Given / When / Then
+blocks. Shared fixtures live in `tests/conftest.py`.
+
 ```python
 # tests/test_feature.py
 import pytest
-from django_liveview import liveview_handler, send
 
-class TestFeature:
-    def test_basic_functionality(self):
-        """Test basic feature behavior"""
-        # Arrange
-        # Act
-        # Assert
-        pass
+from liveview import send
 
-    def test_edge_case(self):
-        """Test edge case handling"""
-        pass
 
-    def test_error_handling(self):
-        """Test error handling"""
-        with pytest.raises(ValueError):
-            # Code that should raise ValueError
-            pass
+def test_basic_functionality(registry, consumer):
+    # Given
+    handler = registry.register("greet")(lambda consumer, content: "hello")
+
+    # When
+    result = handler(consumer, {})
+
+    # Then
+    assert result == "hello"
+
+
+def test_error_handling(consumer):
+    # Given
+    consumer = None
+
+    # When / Then
+    with pytest.raises(ValueError):
+        send(consumer, {})
 ```
 
 ## Release Process
 
 (For maintainers)
 
-1. Update version in `pyproject.toml` and `setup.py`
+1. Update version in `pyproject.toml`, `setup.py` and `liveview/__init__.py`
+   (`tests/test_version.py` checks they match)
 2. Update `CHANGELOG.md`
 3. Create git tag: `git tag v0.x.x`
 4. Push tag: `git push origin v0.x.x`
