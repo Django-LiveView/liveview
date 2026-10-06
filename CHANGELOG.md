@@ -5,6 +5,28 @@ All notable changes to Django LiveView will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [2.4.0] - 2026-10-06
+
+### Added
+- **Typing support**: the package now ships a `py.typed` marker (PEP 561), so type checkers use its annotations and projects running strict mypy can use django-liveview without overrides (thanks to Timothy Zykov, #4)
+- Type annotations for the public API: `liveview_handler` preserves the signature of the decorated function, and `get_liveview_path` / `get_liveview_urlpatterns` return `URLPattern` / `list[URLPattern]`
+- Typing stubs (`django-stubs`, `types-channels`, `types-setuptools`) added to the `dev` extra
+- **Test suite**: unit tests for the registry, middleware, consumer, broadcasting, routing, auto-discovery, template tags and typing (in-memory channel layer, no Redis needed), plus Playwright browser tests for the navigation history that run with Docker (`tests/e2e`)
+- `pre-commit` hooks running `ruff check` and `ruff format`
+
+### Changed
+- `LiveviewHandlerRegistry.get_handler` is now annotated as returning `Callable | None`, matching its actual behaviour when the handler does not exist
+- Errors while importing a `liveview_components` module are logged with their traceback (`logging`) instead of printed
+- `ruff format` replaces `black` in the `dev` extra
+
+### Fixed
+- Navigation history: after the stored journal was lost (memory-only mode or cleared `sessionStorage`) and the page was reloaded, going back changed the URL but not the content; unknown entries now fall back to a full page reload
+- `LiveViewConsumer.connect` created a `group_add` coroutine that was never awaited (`RuntimeWarning` on every connection)
+- `send(None, data, broadcast=True)` raised `ValueError` even though broadcasting does not need a consumer; it now sends to the broadcast group, so you can broadcast from outside a handler (e.g. a background task)
+- A missing channel layer (`CHANNEL_LAYERS`) when broadcasting is now reported explicitly
+- `docs/QUICKSTART.md` used the old `django_liveview` package name and static path
+- `setup.py` `dev` extra was out of sync with `pyproject.toml`, and its URL pointed to the old repository
+
 ## [2.3.0] - 2026-06-03
 
 ### Added
@@ -14,24 +36,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Intra-page state (counters, removed elements, appended lists) is restored "as you left it", with baselines for entries older than the first mutation of a region
 - Graceful fallbacks: full page reload when an entry is unknown or pruned, memory-only mode when the storage quota is exceeded
 - New `liveview:history-restored` event dispatched on `document` after each restore
-- **Typing support**: the package now ships a `py.typed` marker (PEP 561), so type checkers use its annotations and projects running strict mypy can use django-liveview without overrides (thanks to Timothy Zykov, #4)
-- Type annotations for the public API: `liveview_handler` preserves the signature of the decorated function, and `get_liveview_path` / `get_liveview_urlpatterns` return `URLPattern` / `list[URLPattern]`
-- Typing stubs (`django-stubs`, `types-channels`, `types-setuptools`) added to the `dev` extra
-- **Test suite**: unit tests for the registry, middleware, consumer, broadcasting, routing, auto-discovery, template tags and typing (in-memory channel layer, no Redis needed), plus Playwright browser tests for the navigation history that run with Docker (`tests/e2e`)
-- `pre-commit` hooks running `ruff check` and `ruff format`
 
 ### Changed
 - `renderHTML` no longer calls `history.pushState` directly; URL updates are handled by the new history module, which tags every entry with its index
-- `LiveviewHandlerRegistry.get_handler` is now annotated as returning `Callable | None`, matching its actual behaviour when the handler does not exist
-- Errors while importing a `liveview_components` module are logged with their traceback (`logging`) instead of printed
-- `ruff format` replaces `black` in the `dev` extra
-
-### Fixed
-- `LiveViewConsumer.connect` created a `group_add` coroutine that was never awaited (`RuntimeWarning` on every connection)
-- `send(None, data, broadcast=True)` raised `ValueError` even though broadcasting does not need a consumer; it now sends to the broadcast group, so you can broadcast from outside a handler (e.g. a background task)
-- A missing channel layer (`CHANNEL_LAYERS`) when broadcasting is now reported explicitly
-- `docs/QUICKSTART.md` used the old `django_liveview` package name and static path
-- `setup.py` `dev` extra was out of sync with `pyproject.toml`, and its URL pointed to the old repository
 
 ## [2.2.0] - 2026-02-17
 
